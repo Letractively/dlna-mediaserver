@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:sws="http://www.springframework.org/schema/web-services"
+	xmlns:jee="http://www.springframework.org/schema/jee"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/web-services http://www.springframework.org/schema/web-services/web-services-2.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+
+	<context:spring-configured />
+
+	<!-- database -->
+
+	<jee:jndi-lookup id="tomcatDatasource" jndi-name="java:comp/env/jdbc/mediaserver"
+		resource-ref="true" />
+	<jee:jndi-lookup id="hibernateDialect"
+		jndi-name="java:comp/env/mediaserver.database.dialect" resource-ref="true" />
+	<jee:jndi-lookup id="cfgWebappName"
+		jndi-name="java:comp/env/mediaserver.webapp.name" resource-ref="true" />
+	<jee:jndi-lookup id="cfgServerHostname"
+		jndi-name="java:comp/env/mediaserver.server.hostname" resource-ref="true" />
+	<jee:jndi-lookup id="cfgServerPort"
+		jndi-name="java:comp/env/mediaserver.server.port" resource-ref="true" />
+
+	<bean class="de.sosd.mediaserver.service.MediaserverConfiguration" id="mediaserverConfiguration" name="MediaserverConfiguration">
+		<property name="hostname" ref="cfgServerHostname"/>
+		<property name="port" ref="cfgServerPort"/>
+		<property name="webappName" ref="cfgWebappName"/>
+	</bean>
+
+	<bean class="org.springframework.orm.jpa.JpaTransactionManager"
+		id="transactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<tx:annotation-driven mode="aspectj"
+		transaction-manager="transactionManager" />
+
+<!-- 	<context:property-placeholder -->
+<!-- 		system-properties-mode="OVERRIDE" /> -->
+
+	<bean
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		id="entityManagerFactory">
+
+		<property name="dataSource" ref="tomcatDatasource" />
+		<property name="persistenceUnitName" value="mediaserver" />
+		<property name="jpaPropertyMap">
+			<map>
+				<entry key="hibernate.dialect"><ref bean="hibernateDialect" /></entry>
+				<entry key="hibernate.show_sql" value="false" />
+				<entry key="hibernate.format_sql" value="false" />
+				<entry key="hibernate.hbm2ddl.auto" value="update" />
+				<entry key="hibernate.connection.characterEncoding" value="UTF-8" />
+				<entry key="hibernate.connection.release_mode" value="after_transaction" />
+			</map>
+		</property>
+		<!-- <property name="jpaProperties"> -->
+
+		<!-- <props> -->
+		<!-- <prop key="hibernate.dialect" ><ref bean="hibernateDialect"/></prop> -->
+
+
+	<!-- 
+		 <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/> 
+		
+		 <prop key="hibernate.dialect" >org.hibernate.dialect.MySQLInnoDBDialect</prop> 
+		
+		 <prop key="hibernate.connection.driver_class" >com.mysql.jdbc.Driver</prop> 
+		
+		 <prop key="hibernate.connection.url" >jdbc:mysql://localhost:3306/zzzzzzz</prop> 
+		
+		 <prop key="hibernate.connection.username" >root</prop> 
+		
+		 <prop key="hibernate.connection.password" >*******</prop> 
+		
+		 <prop key="hibernate.cache.provider_class" >org.hibernate.cache.NoCacheProvider</prop> 
+		
+		 <prop key="hibernate.c3p0.min_size" >5</prop> 
+		
+		 <prop key="hibernate.c3p0.max_size" >20</prop> 
+		
+		 <prop key="hibernate.c3p0.timeout" >600</prop> 
+		
+		 <prop key="hibernate.c3p0.max_statements" >50</prop> 
+		
+		 <prop key="hibernate.show_sql" >false</prop> 
+		
+		 <prop key="hibernate.format_sql" >true</prop> 
+		
+		 <prop key="hibernate.hbm2ddl.auto" >update</prop> 
+		-->
+
+
+		<!-- </props> -->
+		<!-- </property> -->
+	</bean>
+
+	
+	<context:component-scan base-package="de.sosd.mediaserver.service" />
+	<context:component-scan base-package="de.sosd.mediaserver.process" />	
+	<context:component-scan base-package="de.sosd.mediaserver.task" />
+	<context:component-scan base-package="de.sosd.mediaserver.util" />
+	
+	<bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" id="taskExecuter" name="TaskExecuter">
+		<property name="queueCapacity" value="5" />
+		<property name="maxPoolSize" value="10" />
+	</bean>
+
+	<task:annotation-driven proxy-target-class="true" executor="taskExecuter"/>
+</beans>
