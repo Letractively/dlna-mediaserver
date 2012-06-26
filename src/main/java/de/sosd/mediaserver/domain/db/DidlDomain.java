@@ -196,7 +196,7 @@ public class DidlDomain implements Serializable {
 		this.description = "root";
 		this.classType = ClassNameWcType.OBJECT_CONTAINER_STORAGE_SYSTEM;
 		final List<DidlDomain> content = getContainerContent();
-		final DidlDomain defaultDomain = new DidlDomain(UUID.randomUUID().toString(), "Ordner", "Das Dateisystem", ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME);
+		final DidlDomain defaultDomain = new DidlDomain(UUID.randomUUID().toString(), "Filesystem", "The Filesystem", ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME);
 		defaultDomain.setParent(this);
 		content.add(
 				defaultDomain

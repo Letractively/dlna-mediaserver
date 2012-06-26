@@ -1,17 +1,18 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 <%@ page session="false"%>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 	<head>
 		<meta content="text/html; charset=UTF-8" http-equiv="content-type">
-		<title>Mediaserver - Konfiguration</title>
+		<title><spring:message code="website.settings.title"/></title>
 	</head>
 	<body bgcolor="lightgrey" >		
 		<table border="0" width="100%" height="100%">
 			<thead>
 				<tr>
 					<td>		
-						<h1 align="center">Willkommen auf dem Mediaserver</h1>
+						<h1 align="center"><spring:message code="website.welcome"/></h1>
 					</td>
 				</tr>				
 			</thead>
@@ -42,7 +43,7 @@
 											<tbody>
 												<tr>
 													<td width="100%">
-														<h2 align="center">Einstellungen</h2>
+														<h2 align="center"><spring:message code="website.settings"/></h2>
 													</td>
 												</tr>
 												<tr>
@@ -51,7 +52,7 @@
 															<table border="0" width="100%" border="0" bgcolor="lightblue" cellpadding="5" cellspacing="2" align="left">
 																<tbody>
 																	<tr>
-																		<td nowrap="nowrap">Sichtbarer Name</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.visible_name"/></td>
 																		<td >
 																			<c:out value="${server.name}" />
 																		</td>
@@ -60,7 +61,7 @@
 																		</td>
 																	</tr>
 																	<tr>
-																		<td nowrap="nowrap">Webseite</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.url"/></td>
 																		<td >
 																			<c:out value="${server.url}" />
 																		</td>
@@ -69,17 +70,16 @@
 																		</td>
 																	</tr>
 																	<tr>
-																		<td nowrap="nowrap">Netzwerkkarte</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.network_device"/></td>
 																		<td  nowrap="nowrap">
 																			<c:out value="${server.networkInterface}" />
 																		</td>
 																		<td  nowrap="nowrap">
 																			<input value="<c:out value="${server.networkInterface}"/>" name="networkInterface" type="text" size="100%" />
-																			<font color="orange">(*)</font>
 																		</td>
 																	</tr>
 																	<tr>
-																		<td nowrap="nowrap">Ordner f&uuml;r Previews</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.preview_folder"/></td>
 																		<td  nowrap="nowrap">
 																			<c:out value="${server.previews}" />
 																		</td>
@@ -88,7 +88,7 @@
 																		</td>
 																	</tr>
 																	<tr>
-																		<td nowrap="nowrap">Pfad zu MPlayer</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.mplayer_path"/></td>
 																		<td  nowrap="nowrap">
 																			<c:out value="${server.mplayer}" />
 																		</td>
@@ -97,7 +97,7 @@
 																		</td>
 																	</tr>
 																	<tr>
-																		<td nowrap="nowrap">Pfad zu MEncoder</td>
+																		<td nowrap="nowrap"><spring:message code="website.settings.mencoder_path"/></td>
 																		<td  nowrap="nowrap">
 																			<c:out value="${server.mencoder}" />
 																		</td>
@@ -108,15 +108,8 @@
 																	<tr>
 																		<td></td>
 																		<td></td>
-																		<td align="right">
-																			<font size="1">(*) Neustart erforderlich</font>										
-																		</td>
-																	</tr>
-																	<tr>
-																		<td></td>
-																		<td></td>
 																		<td align="left">
-																			<button type="submit" value="settings" name="update">&Uuml;bernehmen</button>
+																			<button type="submit" value="settings" name="update"><spring:message code="website.settings.submit"/></button>
 																		</td>
 																	</tr>
 																	
@@ -135,12 +128,12 @@
 											<tbody>
 												<tr>
 													<td width="100%">
-														<h2 align="center">Freigaben</h2>
+														<h2 align="center"><spring:message code="website.shares.title"/></h2>
 													</td>
 												</tr>
 												<tr>
 													<td width="100%">
-														<h3>Ordner freigeben</h3>
+														<h3><spring:message code="website.shares.add.title"/></h3>
 													</td>
 												</tr>
 												<tr>
@@ -150,7 +143,7 @@
 																<tbody>
 																	<tr>
 																		<td nowrap="nowrap" align="center">
-																			<button type="submit" name="folder_bt" value="create">Hinzuf&uuml;gen</button>
+																			<button type="submit" name="folder_bt" value="create"><spring:message code="website.shares.add.submit"/></button>
 																			<input name="folder" type="text" size="100%"/>
 																		</td>
 																	</tr>
@@ -161,7 +154,7 @@
 												</tr>
 												<tr>
 													<td width="100%">
-														<h3>&Uuml;bersicht der vorhandenen Freigaben</h3>
+														<h3><spring:message code="website.shares.current.title"/></h3>
 													</td>
 												</tr>
 												<tr>
@@ -170,13 +163,13 @@
 															<tbody>
 																<tr>
 																	<th></th>
-																	<th nowrap="nowrap" align="center">Status</th>
-																	<th nowrap="nowrap" align="center">Ordner</th>
-																	<th nowrap="nowrap" align="center">enhaltene Ordner</th>
-																	<th nowrap="nowrap" align="center">enthaltene Dateien</th>
-																	<th nowrap="nowrap" align="center">Gesamtgr&ouml;&szlig;e</th>
-																	<th nowrap="nowrap" align="center">Letzte Pr&uuml;fung</th>
-																	<th nowrap="nowrap" align="center">Pr&uuml;fintervall in Minuten</th>																
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.state"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.folder"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.folder_count"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.file_count"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.size"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.last_scan"/></th>
+																	<th nowrap="nowrap" align="center"><spring:message code="website.shares.current.scan_interval"/></th>																
 																</tr>
 																<c:forEach var="folder" items="${folderList}" varStatus="rowCounter">
 															      <c:choose>
@@ -187,25 +180,25 @@
 															            <c:set var="rowStyle" scope="page" value="lightyellow"/>
 															          </c:otherwise>
 															        </c:choose>																
-																<tr bgcolor="${rowStyle}">
-																	<td  nowrap="nowrap" align="right", valign="middle">
-																		<form accept-charset="utf8"	enctype="application/x-www-form-urlencoded" method="POST" action="scanfolder/remove">
-																			<button type="submit" value="${folder.id}" name="folder">Entfernen</button>
-																		</form>
-																	</td>
-																	<td nowrap="nowrap" align="center">${folder.scanState}</td>
-																	<td nowrap="nowrap" align="justify">${folder.path}</td>
-																	<td nowrap="nowrap" align="center">${folder.folderCount}</td>
-																	<td nowrap="nowrap" align="center">${folder.fileCount}</td>
-																	<td nowrap="nowrap" align="center">${folder.size}</td>
-																	<td nowrap="nowrap" align="center">${folder.lastScan}</td>
-																	<td nowrap="nowrap" align="center">
-																		<form accept-charset="utf8"	enctype="application/x-www-form-urlencoded" method="POST" action="scanfolder/update">
-																			<input type="text" name="scan_interval" value="${folder.scanInterval}" size="8"/> 
-																			<button type="submit" value="${folder.id}" name="folder">&Auml;ndern</button>		
-																		</form>																	
-																	</td>
-																</tr>
+																	<tr bgcolor="${rowStyle}">
+																		<td  nowrap="nowrap" align="right" valign="middle">
+																			<form accept-charset="utf8"	enctype="application/x-www-form-urlencoded" method="POST" action="scanfolder/remove">
+																				<button type="submit" value="${folder.id}" name="folder"><spring:message code="website.shares.current.remove"/></button>
+																			</form>
+																		</td>
+																		<td nowrap="nowrap" align="center"><spring:message code="${folder.scanState}"/></td>
+																		<td nowrap="nowrap" align="justify">${folder.path}</td>
+																		<td nowrap="nowrap" align="center">${folder.folderCount}</td>
+																		<td nowrap="nowrap" align="center">${folder.fileCount}</td>
+																		<td nowrap="nowrap" align="center">${folder.size}</td>
+																		<td nowrap="nowrap" align="center"><spring:message text="${folder.lastScan}" /></td>
+																		<td nowrap="nowrap" align="center">
+																			<form accept-charset="utf8"	enctype="application/x-www-form-urlencoded" method="POST" action="scanfolder/update">
+																				<input type="text" name="scan_interval" value="${folder.scanInterval}" size="8"/> 
+																				<button type="submit" value="${folder.id}" name="folder"><spring:message code="website.shares.current.adjust"/></button>		
+																			</form>																	
+																		</td>
+																	</tr>
 																</c:forEach>
 															</tbody>
 														</table>

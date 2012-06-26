@@ -12,7 +12,7 @@ public class FrontendFolderBean {
 
 	private String id;
 	private String path;
-	private String lastScan;
+	private Date lastScan;
 	private int scanInterval;
 	private String scanState;
 	private int folderCount;
@@ -111,7 +111,7 @@ public class FrontendFolderBean {
 	/**
 	 * @return the lastScan
 	 */
-	public String getLastScan() {
+	public Date getLastScan() {
 		return this.lastScan;
 	}
 
@@ -120,12 +120,13 @@ public class FrontendFolderBean {
 	 *            the lastScan to set
 	 */
 	public void setLastScan(final Date lastScan) {
-		if (lastScan != null) {
-			final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss' ('dd.MM.yyyy')'");
-			this.lastScan = sdf.format(lastScan);
-		} else {
-			this.lastScan = "";
-		}
+		this.lastScan = lastScan;
+//		if (lastScan != null) {
+//			final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss' ('dd.MM.yyyy')'");
+//			this.lastScan = sdf.format(lastScan);
+//		} else {
+//			this.lastScan = "";
+//		}
 	}
 
 	/**
@@ -163,20 +164,20 @@ public class FrontendFolderBean {
 	 *            the scanState to set
 	 */
 	public void setScanState(final ScanFolderState scanState) {
-		if (getLastScan().length() == 0) {
-			this.scanState = "Wird eingelesen";
+		if (getLastScan() == null) {
+			this.scanState = "folder.initial_scanning";
 		} else {
 			switch (scanState) {
 				case IDLE: {
-					this.scanState = "Aktuell";
+					this.scanState = "folder.up_to_date";
 					break;
 				}
 				case SCANNING: {
-					this.scanState = "Wird aktualisiert";
+					this.scanState = "folder.scanning";
 					break;
 				}
 				case NOT_FOUND: {
-					this.scanState = "nicht gefunden";
+					this.scanState = "folder.not_found";
 					break;
 				}
 			}

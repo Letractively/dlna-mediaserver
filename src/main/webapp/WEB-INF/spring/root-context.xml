@@ -16,6 +16,8 @@
 
 	<context:spring-configured />
 
+
+
 	<!-- database -->
 
 	<jee:jndi-lookup id="tomcatDatasource" jndi-name="java:comp/env/jdbc/mediaserver"
