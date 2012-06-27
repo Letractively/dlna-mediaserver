@@ -105,7 +105,6 @@ public class DidlXmlCreator {
 	}
 
 	public int getUpdateID() {
-		// TODO Auto-generated method stub
 		return this.updateId;
 	}
 
@@ -118,6 +117,9 @@ public class DidlXmlCreator {
 	}
 
 	public String translateId(final DidlDomain didl) {
+		if (didl == null) {
+			return "-1";
+		}
 		return translateId(didl.getId());
 	}
 
