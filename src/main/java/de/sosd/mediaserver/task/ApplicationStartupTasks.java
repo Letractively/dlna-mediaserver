@@ -1,12 +1,16 @@
 package de.sosd.mediaserver.task;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderState;
 import de.sosd.mediaserver.domain.db.SystemDomain;
@@ -31,7 +35,18 @@ public class ApplicationStartupTasks implements ApplicationListener<ContextRefre
 	public void onApplicationEvent(final ContextRefreshedEvent event) {
 		DLNAContentDirectoryEventServlet.setUSN(this.cfg.getUSN());
 		setSystemOnline();
+		applyDatabaseOptimizations();
+	}
+
+	@Async
+	@Transactional(propagation=Propagation.REQUIRED)
+	private void applyDatabaseOptimizations() {
+		List<DidlDomain> list = storage.getAllDidlWithContentSizeNull();
 		
+		for (DidlDomain dd : list) {
+			dd.getContainerContentSize();
+			storage.store(dd);
+		}
 	}
 
 	@Transactional(propagation=Propagation.REQUIRED)

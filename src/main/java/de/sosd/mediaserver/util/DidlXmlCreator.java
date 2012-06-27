@@ -118,17 +118,21 @@ public class DidlXmlCreator {
 	}
 
 	public String translateId(final DidlDomain didl) {
-		if (didl == null) {
+		return translateId(didl.getId());
+	}
+
+	public String translateId(String id) {
+		if (id == null) {
 			return "-1";
 		} else {
-			if (getServerID().equals(didl.getId())) {
+			if (getServerID().equals(id)) {
 				return "0";
 			}
-			return didl.getId();
+			return id;
 		}
-	}
+	}	
 	
-
+	
 	public String formatDateWithTime(final Date date) {
 		return this.sdf.format(date);
 	}
@@ -152,6 +156,7 @@ public class DidlXmlCreator {
 //			return "http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000";
 //		}
 //		return null;
-	}	
+	}
+
 	
 }

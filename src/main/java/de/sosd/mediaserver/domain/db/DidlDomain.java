@@ -131,8 +131,9 @@ public class DidlDomain implements Serializable {
     @ManyToOne(targetEntity=DidlDomain.class, fetch = FetchType.LAZY, optional=true)
     private DidlDomain parent;	
  	@OneToMany(targetEntity=DidlDomain.class, fetch=FetchType.LAZY, mappedBy="parent", cascade=CascadeType.ALL)
-	private final List<DidlDomain> containerContent = new ArrayList<DidlDomain>(5);
-
+	private List<DidlDomain> containerContent = new ArrayList<DidlDomain>(5);
+ 	@Column(name="child_count")
+ 	private Integer containerContentSize;
  	@OneToOne(optional=true, targetEntity=FileDomain.class,fetch=FetchType.LAZY)
  	private FileDomain file;
 	@OneToOne(optional=true, targetEntity=ScanFolderDomain.class,fetch=FetchType.LAZY, mappedBy="didl")
@@ -143,7 +144,7 @@ public class DidlDomain implements Serializable {
     @ManyToOne(targetEntity=DidlDomain.class, fetch = FetchType.LAZY, optional=true)
     private DidlDomain reference;		
  	@OneToMany(targetEntity=DidlDomain.class, fetch=FetchType.LAZY, mappedBy="reference", cascade=CascadeType.ALL)
-	private final List<DidlDomain> references = new ArrayList<DidlDomain>(5);
+	private List<DidlDomain> references = new ArrayList<DidlDomain>(5);
 	
 	/*********** DIDL-OPTIONS **************/
 	@Column(name="searchable")
@@ -692,6 +693,17 @@ public class DidlDomain implements Serializable {
 		return this.passedMPlayer;
 	}
 	
+	public Integer getContainerContentSize() {
+		if (containerContentSize == null) {
+			setContainerContentSize(getContainerContent().size());
+		}
+		return containerContentSize;
+	}
+	
+	public void setContainerContentSize(Integer containerContentSize) {
+		this.containerContentSize = containerContentSize;
+	}
+	
 	@Transient
 	private boolean updateIdIncreased = false;
 	
@@ -842,12 +854,11 @@ public class DidlDomain implements Serializable {
 //	    <dc:date>2009-09-11T23:53:10</dc:date>
 //	    <upnp:class>object.container.storageFolder</upnp:class>
 //	  </container>
-		
 		// write node and attributes
 		out.append("<container id=\"");
 		out.append(helper.translateId(this));
 		out.append("\" childCount=\"");
-		out.append(getContainerContent().size());
+		out.append(getContainerContentSize());
 		if (getReference() != null) {
 			out.append("\" refID=\"");
 			out.append(helper.translateId(getReference()));
@@ -1161,6 +1172,7 @@ public class DidlDomain implements Serializable {
 		if (getContainerContent().remove(item)) {
 			item.setParent(null);
 			increaseUpdateId();
+			setContainerContentSize(getContainerContent().size());
 			return true;
 		}
 		
@@ -1171,6 +1183,7 @@ public class DidlDomain implements Serializable {
 		if (getContainerContent().add(item)) {
 			item.setParent(this);
 			increaseUpdateId();
+			setContainerContentSize(getContainerContent().size());
 			return true;
 		}
 		

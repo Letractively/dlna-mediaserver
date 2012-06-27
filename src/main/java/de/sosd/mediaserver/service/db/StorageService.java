@@ -28,6 +28,8 @@ import de.sosd.mediaserver.util.DidlXmlCreator;
 @Service
 public class StorageService {
 
+//	private final static Logger logger = LoggerFactory.getLogger(StorageService.class);
+	
 	@PersistenceContext(name = "mediaserver")
 	protected EntityManager manager;
 
@@ -59,15 +61,14 @@ public class StorageService {
 		q.setFirstResult(startIdx);
 		q.setMaxResults(count);
 		@SuppressWarnings("unchecked")
-		final
-		List<DidlDomain> resultList = q.getResultList();
+		final List<DidlDomain> resultList = q.getResultList();
 
 		final Long totalMatches = getContainerContentChildCountById(containerId, filter);
-		
 		final DidlXmlCreator didlLite = new DidlXmlCreator();
 		didlLite.setTotalMatches(totalMatches);
+		
 		for (final DidlDomain dd : resultList) {
-			didlLite.addDidlObject(dd);
+			didlLite.addDidlObject(dd);			
 		}
 
 		return didlLite;
@@ -84,7 +85,6 @@ public class StorageService {
 		}
 		q.setFirstResult(startIdx);
 		q.setMaxResults(count);
-
 		final Long totalMatches = getAllItemsCount(where, searchParameters, filter);
 		@SuppressWarnings("unchecked")
 		final
@@ -123,7 +123,6 @@ public class StorageService {
 		q.setParameter(2, true);
 		q.setFirstResult(startIdx);
 		q.setMaxResults(count);
-
 
 		@SuppressWarnings("unchecked")
 		final
@@ -350,6 +349,15 @@ public class StorageService {
 		final SystemDomain systemProperties = getSystemProperties();
 		systemProperties.setThumbnailGenerationRunning(value);
 		this.manager.persist(systemProperties);	
+	}
+	
+	
+	// optimizations through update
+	
+	@SuppressWarnings("unchecked")
+	@Transactional(propagation=Propagation.SUPPORTS)
+	public List<DidlDomain> getAllDidlWithContentSizeNull() {
+		return this.manager.createQuery("select didl from DIDL as didl where didl.containerContentSize is null").getResultList();
 	}
 
 

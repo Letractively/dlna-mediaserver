@@ -8,8 +8,6 @@ import java.util.TimeZone;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpStatus;
 
 public class DLNAContentDirectoryEventServlet extends DLNAEventServlet {
@@ -18,7 +16,7 @@ public class DLNAContentDirectoryEventServlet extends DLNAEventServlet {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private final static Log logger = LogFactory.getLog(DLNAContentDirectoryEventServlet.class);
+//	private final static Log logger = LogFactory.getLog(DLNAContentDirectoryEventServlet.class);
 	private static SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss", Locale.US);
 
 	private static String uuid;
