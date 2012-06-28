@@ -1,8 +1,5 @@
 package de.sosd.mediaserver.process;
 
-import java.awt.AlphaComposite;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -152,35 +149,6 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 //		String result = string.replaceAll(" ", "\\\\ ");
 //		return "\"" + result + "\"";
 //	}
-
-	private BufferedImage resizeImageWithHint(final float maxHeightAndWidth, final BufferedImage originalImage){
-		
-		final int type = originalImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
-		final int width = originalImage.getWidth();
-		final int height = originalImage.getHeight();
-		
-		final float w_p = maxHeightAndWidth / width;
-		final float h_p = maxHeightAndWidth / height;
-		final float percent = Math.min(w_p, h_p);
-		
-		final int IMG_WIDTH = (int)  (width * percent);
-		final int IMG_HEIGHT = (int) (height * percent);		
-		
-		final BufferedImage resizedImage = new BufferedImage(IMG_WIDTH, IMG_HEIGHT, type);
-		final Graphics2D g = resizedImage.createGraphics();
-		g.drawImage(originalImage, 0, 0, IMG_WIDTH, IMG_HEIGHT, null);
-		g.dispose();	
-		g.setComposite(AlphaComposite.Src);
-	 
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-		RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,
-		RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-		RenderingHints.VALUE_ANTIALIAS_ON);
-	 
-		return resizedImage;
-	}	
 	
 	@Transactional(propagation=Propagation.REQUIRED)
 	private void update() {

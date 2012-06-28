@@ -1,5 +1,6 @@
 package de.sosd.mediaserver.service.db;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.imageio.ImageIO;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -93,11 +96,11 @@ public class DIDLService {
 	    ,{"WMA"  ,ClassNameWcType.OBJECT_ITEM_AUDIO_ITEM_MUSIC_TRACK.value(),upnp_wma,"DLNA.ORG_PN=WMAFULL;DLNA.ORG_OP=01;DLNA.ORG_FLAGS=01700000000000000000000000000000",http_mime_wma}
 	    ,{"WAV"  ,ClassNameWcType.OBJECT_ITEM_AUDIO_ITEM_MUSIC_TRACK.value(),"http-get:*:audio/L16:","MICROSOFT.COM_PN=WAV_PCM",http_mime_bin}
 	    ,{"PCM"  ,ClassNameWcType.OBJECT_ITEM_AUDIO_ITEM_MUSIC_TRACK.value(),"http-get:*:audio/L16:","MICROSOFT.COM_PN=WAV_PCM",http_mime_bin}
-	    
-	    ,{"JPG"	,ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/jpeg:","DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
-	    ,{"JPEG",ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/jpeg:","DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
+	    // TODO acquire ProfileName / DLNA.ORG_PN with actual image-size
+	    ,{"JPG"	,ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/jpeg:","DLNA.ORG_PN=JPEG_LRG;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
+	    ,{"JPEG",ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/jpeg:","DLNA.ORG_PN=JPEG_LRG;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
 	    ,{"GIF"	,ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/gif:","*", http_mime_bin}
-	    ,{"PNG"	,ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/png:","DLNA.ORG_PN=PNG_TN;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
+	    ,{"PNG"	,ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO.value(), "http-get:*:image/png:","DLNA.ORG_PN=PNG_LRG;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000", http_mime_bin}
     
 	    ,{"M3U" , ClassNameWcType.OBJECT_ITEM_PLAYLIST_ITEM.value(), "http-get:*:audio/m3u:","*", http_mime_text}
 // removed to keep the db clean	    
@@ -235,7 +238,8 @@ public class DIDLService {
 
 	public DidlDomain createDidlItem(final FileDomain file) {
 		final int extensionCut = file.getName().lastIndexOf(".");
-		if (extensionCut > 0) {		
+		DidlDomain result = null;
+		if (file.getSize() > 0 && extensionCut > 0) {		
 			final String name = file.getName().substring(0, extensionCut);
 			final String extension = file.getName().substring(extensionCut+1).toUpperCase();
 			
@@ -243,7 +247,6 @@ public class DIDLService {
 			if (classType == null) {
 				unsupportedExtensionsMissingClassType.add(extension);
 			} else {
-				
 //			    <upnp:genre>Unbekannt</upnp:genre>
 //			    <upnp:album>Filme</upnp:album>
 //			    <upnp:albumArtURI 
@@ -261,16 +264,34 @@ public class DIDLService {
 //				
 				final String contentProtocol = extensionProtocolInfoMap.get(extension);
 				if (contentProtocol != null) {
-					return createDidlItem(name, file, classType,file.getId() + "." + extension,  contentProtocol);
+					result = createDidlItem(name, file, classType,file.getId() + "." + extension,  contentProtocol);
+					switch (classType) {
+					case OBJECT_ITEM_IMAGE_ITEM:
+					case OBJECT_ITEM_IMAGE_ITEM_PHOTO: {
+						try {
+							BufferedImage read = ImageIO.read(new File(file.getPath()));
+							read.flush();
+							result.setResolution(read.getWidth() + "x" + read.getHeight());
+							// TODO set protocolInfo accordingly (depends on resolution here)
+						} catch (Throwable t) {
+							// if we can't read it, clients probably can't as well -> ignore
+							return null;
+						}
+						
+						break;
+					}
+					default : break;				
+				}					
 				} else {
 					unsupportedExtensionsMissingProtocolInfo.add(extension);
+					
 				}
 			}
 		} else {
 			// no extension, no mapping -> don't show		
 		}	
 		
-		return null;
+		return result;
 	}
 
 	public int getDefaultFolderCount() {

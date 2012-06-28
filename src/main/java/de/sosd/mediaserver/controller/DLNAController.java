@@ -42,6 +42,7 @@ import org.upnp.schemas.service.contentdirectory._1.SearchResponse;
 import org.xmlsoap.schemas.soap.envelope.Envelope;
 
 import de.sosd.mediaserver.service.MediaserverConfiguration;
+import de.sosd.mediaserver.service.ThumbnailService;
 import de.sosd.mediaserver.service.db.DIDLService;
 import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.service.dlna.ContentDirectoryService;
@@ -58,6 +59,9 @@ public class DLNAController {
 	@Autowired
 	private ContentDirectoryService service;
 
+	@Autowired
+	private ThumbnailService thumbs;
+	
 	final JAXBContext context;	
 	
 	public static final String DLNA_BASE = "/dlna";
@@ -280,9 +284,12 @@ public class DLNAController {
 			@PathVariable("uuid") final String uuid,
 			@PathVariable("extension") final String extension,
 			@RequestParam(value="start", required = false, defaultValue = "0") long start, 
-			@RequestParam(value="stop", required = false, defaultValue = "-1") long stop, 
+			@RequestParam(value="stop", required = false, defaultValue = "-1") long stop,
+			@RequestParam(required=false, value="width")Integer width,
+			@RequestParam(required=false, value="height")Integer height,
 			final HttpServletRequest request, final HttpServletResponse response) {
 		
+			boolean resizeTheImage = false;
 			if (type.equals("video") || type.equals("audio")) {
 				final String range = request.getHeader("RANGE");
 				if (range != null) {
@@ -295,40 +302,42 @@ public class DLNAController {
 						stop = Long.parseLong(ranges[1]);
 					}
 				}
+			} else {
+				resizeTheImage = (width != null && height != null) && (type.equals("image") || type.equals("thumb"));
 			}
 
 			
 			
 			RandomAccessFile input = null;
 			try {
-				
 				File content;
 				
 				if (type.equals("thumb")) {
-					final File previews = new File(this.cfg.getPreviews());
-					content = new File(previews, uuid + "." + this.storage.getDidlThumbnailType(uuid));
+					content = thumbs.getFile(uuid, extension, width, height);
 				} else {
 					final String path = this.storage.getPathForFile(uuid);	
 					if (path == null) {
 						throw new FileNotFoundException("no file for uuid " + uuid);
 					}
 					content = new File(path);
+				} 
+				if (resizeTheImage && type.equals("image")) {
+					content = thumbs.getFile(uuid, extension, width, height, content);
 				}
+				
 				if (!content.exists()) {
 					throw new FileNotFoundException("file " + content.getAbsolutePath() + " is not present!");
-				}
-				input = new RandomAccessFile(content, "r");
-				
+				}				
+				response.setContentType(this.didlService.getMimeTypeForExtension(extension));
+									
+				final ServletOutputStream output = response.getOutputStream();
+					
+				input = new RandomAccessFile(content, "r");			
 				if (stop == -1) {
 					stop = input.length();
 				}
-				
-				response.setContentLength((int)(stop - start));
-				response.setContentType(this.didlService.getMimeTypeForExtension(extension));
 				input.seek(start);
-						
-				response.setStatus(HttpStatus.OK.value());
-				final ServletOutputStream output = response.getOutputStream();
+				
 				final byte[] buffer = new byte[1024];
 				int size = 0;
 				long pos = start;
@@ -338,12 +347,17 @@ public class DLNAController {
 						output.write(buffer, 0, size);
 					}
 					pos +=size;
+					
 				} while ((size == buffer.length) && (pos < stop));
-
+				response.setContentLength((int)(pos - start));
+				
+				response.setStatus(HttpStatus.OK.value());
 			} catch (final FileNotFoundException e) {
 				response.setStatus(HttpStatus.NOT_FOUND.value());
+				logger.error(e);
 			} catch (final IOException e) {
 				response.setStatus(HttpStatus.METHOD_FAILURE.value());
+				logger.error(e);
 			} finally {
 				if (input != null) {
 					try {

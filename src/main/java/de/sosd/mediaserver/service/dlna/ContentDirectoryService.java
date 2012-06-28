@@ -75,7 +75,7 @@ public class ContentDirectoryService {
 				filter,
 				sort			
 				);
-		createResponse(response, didlLite);
+		String responseText = createResponse(response, didlLite);
 //		System.out.println("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
 //		System.out.println(responseText);		
 		logger.info("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"]");	
@@ -129,7 +129,7 @@ public class ContentDirectoryService {
 					);
 		
 		
-		createResponse(response, didl);
+		String responseText = createResponse(response, didl);
 //		System.out.println("BrowseDirectChildren ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
 //		System.out.println(responseText);
 		logger.info("BrowseDirectChildren ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	
@@ -156,7 +156,7 @@ public class ContentDirectoryService {
 //		
 //		
 		
-createResponse(response, didl);
+		String responseText = createResponse(response, didl);
 //		System.out.println("Search ["+request.getContainerId()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
 //		System.out.println(responseText);		
 		logger.info("Search ["+request.getContainerID()+","+request.getStartingIndex()+","+request.getRequestedCount()+","+request.getSearchCriteria()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	

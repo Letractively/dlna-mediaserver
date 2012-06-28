@@ -923,6 +923,7 @@ public class DidlDomain implements Serializable {
 		addGenre(out);
 		addArtist(out);
 		addAlbum(out);
+		addTrack(out);
 		addDate(out, helper);
 		addActor(out);
 		addScheduledStartTime(out, helper);
@@ -937,6 +938,8 @@ public class DidlDomain implements Serializable {
 		// close node
 		out.append("</item>");	
 	}
+
+
 
 	private void addFolderPathMS(final StringBuffer out) {
 		/*
@@ -998,11 +1001,7 @@ public class DidlDomain implements Serializable {
 		 	http://192.168.101.227:10243/WMPNSSv4/2341708733/0_e0E4Mzc5QzZGLTZDREMtNDM2Ny1BQkU0LTA2NDU2OUU2NzQwNH0uMC42QkE4RTAwRQ.jpg?albumArt=true
 		 </upnp:albumArtURI>
 		*/
-		if ((getThumbnail() != null) && getThumbnail().getType().equalsIgnoreCase("jpg")) {
-			out.append("<upnp:albumArtURI dlna:profileID=\"JPEG_TN\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\">");
-			out.append(helper.getUrl(getThumbnail(), getId()));
-			out.append("</upnp:albumArtURI>");
-		}
+		helper.writeAlbumArtURI(this, out);
 	}	
 
 	private void addArtist(final StringBuffer out) {
@@ -1045,6 +1044,15 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
+	private void addTrack(StringBuffer out) {
+		// <upnp:originalTrackNumber>1</upnp:originalTrackNumber>
+		if (getTrack() != null) {
+			out.append("<upnp:originalTrackNumber>");
+			out.append(getTrack());
+			out.append("</upnp:originalTrackNumber>");					
+		}	
+	}
+	
 	private void addClass(final StringBuffer out) {
 		// <upnp:class>object.item.videoItem</upnp:class>
 		out.append("<upnp:class>");
@@ -1127,27 +1135,28 @@ public class DidlDomain implements Serializable {
 		   	http://192.168.101.50:9000/disk/DLNA-PNJPEG_TN-CI1-FLAGS00f00000/defaultalbumart/v_i_d_e_o.jpg/O0$3$27I1293.jpg?scale=160x160
 		   </res>
 		 */
-		if (getThumbnail() != null) {
-			final String pi = helper.getProtocolInfo(getThumbnail());
-			if (pi != null) {
-				out.append("<res");
-				if (getSize() != null) {
-					out.append("");
-				}			
-				if (getThumbnail().getResolution() != null) {
-					out.append(" resolution=\"");
-					out.append(getThumbnail().getResolution());
-					out.append("\"");
-				}			
-				out.append(" protocolInfo=\"");
-				out.append(pi);
-				out.append("\"");	
-				out.append(">");
-				// TODO get real server-url
-				out.append(helper.getUrl(getThumbnail(), getId()));
-				out.append("</res>");
-			}
-		}		
+		helper.writeThumbRes(this, out);
+//		if (getThumbnail() != null) {
+//			final String pi = helper.getProtocolInfo(getThumbnail());
+//			if (pi != null) {
+//				out.append("<res");
+//				if (getSize() != null) {
+//					out.append("");
+//				}			
+//				if (getThumbnail().getResolution() != null) {
+//					out.append(" resolution=\"");
+//					out.append(getThumbnail().getResolution());
+//					out.append("\"");
+//				}			
+//				out.append(" protocolInfo=\"");
+//				out.append(pi);
+//				out.append("\"");	
+//				out.append(">");
+//				// TODO get real server-url
+//				out.append(helper.getUrl(getThumbnail(), getId()));
+//				out.append("</res>");
+//			}
+//		}		
 	}
 
 	private void addCreator(final StringBuffer out) {
