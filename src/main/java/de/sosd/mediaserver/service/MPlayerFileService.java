@@ -137,7 +137,7 @@ public class MPlayerFileService {
 			if (this.metaInfoReader != null) {
 				this.metaInfoReader.interrupt();
 			}
-			this.metaInfoReader = new MetaInfoReaderThread();
+			this.metaInfoReader = new MetaInfoReaderThread(system);
 			this.metaInfoReader.start();			
 		} else {
 			logger.info("skipped create-meta-info, already running");

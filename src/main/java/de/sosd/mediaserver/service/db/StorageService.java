@@ -74,22 +74,27 @@ public class StorageService {
 		return didlLite;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public DidlXmlCreator getAllItems(final String where, final ArrayList<Object> searchParameters, final int startIdx, final int count,
+	public DidlXmlCreator getSearchItems(final String objectId, final String where, final ArrayList<Object> searchParameters, final int startIdx, final int count,
 			final String filter, final String sort) {
-		// " order by didl.classType desc, didl.parent.id,  didl.title asc, didl.date desc" +
-		final Query q = this.manager.createQuery("select didl from DIDL as didl" + where + filter +  sort);
-		int idx = 1;
-		for (final Object param : searchParameters) {
-			q.setParameter(idx++, param);
+		List<String> searchPaths = manager.createQuery("select path from DIDL where id = ?1").setParameter(1, objectId).setMaxResults(1).getResultList();
+		Long totalMatches = 0l;
+		List<DidlDomain> resultList = new ArrayList<DidlDomain>();
+		if (!searchPaths.isEmpty()) {
+			String searchPath = searchPaths.get(0) + "%";
+			// " order by didl.classType desc, didl.parent.id,  didl.title asc, didl.date desc" +
+			final Query q = this.manager.createQuery("select didl from DIDL as didl" + where + filter +  sort);
+			int idx = 1;
+			for (final Object param : searchParameters) {
+				q.setParameter(idx++, param);
+			}
+			q.setParameter(idx++, searchPath);
+			q.setFirstResult(startIdx);
+			q.setMaxResults(count);
+			totalMatches = getSearchItemsCount(searchPath, where, searchParameters, filter);
+			resultList = q.getResultList();
 		}
-		q.setFirstResult(startIdx);
-		q.setMaxResults(count);
-		final Long totalMatches = getAllItemsCount(where, searchParameters, filter);
-		@SuppressWarnings("unchecked")
-		final
-		List<DidlDomain> resultList = q.getResultList();
-
 		final DidlXmlCreator didlLite = new DidlXmlCreator();
 		didlLite.setTotalMatches(totalMatches);
 		for (final DidlDomain dd : resultList) {
@@ -105,12 +110,13 @@ public class StorageService {
 	}
 	
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public Long getAllItemsCount(final String where, final ArrayList<Object> searchParameters, final String filter) {
+	public Long getSearchItemsCount(String searchPath, final String where, final ArrayList<Object> searchParameters, final String filter) {
 		final Query q = this.manager.createQuery("select count(didl) from DIDL as didl" + where + filter);
 		int idx = 1;
 		for (final Object param : searchParameters) {
 			q.setParameter(idx++, param);
 		}
+		q.setParameter(idx++, searchPath);
 		return  (Long) q.getSingleResult();
 	}
 	
@@ -242,6 +248,15 @@ public class StorageService {
 		}
 	}
 	
+	@Transactional(propagation=Propagation.SUPPORTS)
+	public DidlDomain getDidl(String id) {
+		try {
+			return this.manager.find(DidlDomain.class, id);
+		} catch (final EmptyResultDataAccessException nre) {
+			return null;		
+		}
+	}
+	
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void store(final ScanFolderDomain scfd) {
 		this.manager.persist(scfd);
@@ -325,6 +340,22 @@ public class StorageService {
 	}
 	// .setMaxResults(120)
 
+	@SuppressWarnings("unchecked")
+	public List<String> getImageFileIdsWithoutMeta() {
+		final Query q = this.manager.createQuery("select file.id from DIDL where (online is null or online = ?7) and (generateThumbnail is null or generateThumbnail = ?6) and (" +
+					"classType = ?1 or " +
+					"classType = ?2" +
+				")"
+				);
+		
+		q.setParameter(1, ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM);
+		q.setParameter(2, ClassNameWcType.OBJECT_ITEM_IMAGE_ITEM_PHOTO);
+		q.setParameter(6, true);
+		q.setParameter(7, true);
+		return q.getResultList();
+	}	
+	
+	
 	@Transactional(propagation=Propagation.SUPPORTS)
 	public String getDidlThumbnailType(final String id) {
 		return (String)this.manager.createQuery("select thumbnail.type from DIDL where id = ?1").setParameter(1, id).getSingleResult();
@@ -359,6 +390,10 @@ public class StorageService {
 	public List<DidlDomain> getAllDidlWithContentSizeNull() {
 		return this.manager.createQuery("select didl from DIDL as didl where didl.containerContentSize is null").getResultList();
 	}
+
+
+
+
 
 
 

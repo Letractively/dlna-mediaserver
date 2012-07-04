@@ -1,5 +1,6 @@
 package de.sosd.mediaserver.controller;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -443,7 +444,18 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-		logger.debug("IsAuthorized " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);				
+		
+		logger.info("IsAuthorized " + request.getRemoteAddr() + " -> " + baos.toString());
 	}
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -464,7 +476,19 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-		logger.debug("IsValidated " + request.getRemoteAddr());
+
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);				
+		
+		logger.info("IsValidated " + request.getRemoteAddr() + " -> " + baos.toString());
 	}
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -485,7 +509,19 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-		logger.debug("RegisterDevice " + request.getRemoteAddr());
+		
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);				
+		
+		logger.info("RegisterDevice " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -493,7 +529,17 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetCurrentConnectionInfo(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		logger.debug("GetCurrentConnectionInfo " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);
+		logger.info("GetCurrentConnectionInfo " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -501,7 +547,17 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerConnectionComplete(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		logger.debug("ConnectionComplete " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);		
+		logger.info("ConnectionComplete " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -509,7 +565,17 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerPrepareForConnection(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		logger.debug("PrepareForConnection " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);		
+		logger.info("PrepareForConnection " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -517,7 +583,17 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetProtocolInfo(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		logger.debug("GetProtocolInfo " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);		
+		logger.info("GetProtocolInfo " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -525,7 +601,17 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetCurrentConnectionIDs(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		logger.debug("GetCurrentConnectionIDs " + request.getRemoteAddr());
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);				
+		logger.info("GetCurrentConnectionIDs " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {

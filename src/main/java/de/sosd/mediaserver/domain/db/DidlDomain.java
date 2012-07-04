@@ -25,6 +25,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Index;
+
 import de.sosd.mediaserver.service.db.ThumbnailPurger;
 import de.sosd.mediaserver.util.DidlXmlCreator;
 
@@ -47,6 +49,9 @@ public class DidlDomain implements Serializable {
     private String id;
     @Column(name="title",length=255, nullable=false)	
     private String title;
+    @Index(name="idx_path", columnNames= {"path"})
+    @Column(name="path", length=4096, nullable = true)    
+    private String path;    
     @Column(name="video_codec",length=20)	
     private String videoCodec;
     @Column(name="audio_codec",length=20)	
@@ -158,15 +163,13 @@ public class DidlDomain implements Serializable {
 	@Column(name="online")
 	private Boolean online = true;	
 	
-	public DidlDomain() {}
-	
-	public DidlDomain(final String title, final FileDomain file, final ClassNameWcType classType, final String url, final String protocolInfo) {
+	public DidlDomain() {
 		super();
-		this.id = file.getId();
-		this.title = title;
+	}
+	
+	public DidlDomain(final String title, final FileDomain file, final ClassNameWcType classType, final String url, final String protocolInfo, DidlDomain parent) {
+		this(file.getId(), title, file.getPath(), classType, parent);
 		this.date = file.getLastModified();
-		this.description = file.getPath();
-		this.classType = classType;
 		this.url = url;
 		this.protocolInfo = protocolInfo;
 		this.size = file.getSize();
@@ -174,45 +177,34 @@ public class DidlDomain implements Serializable {
 		file.setDidl(this);
 	}
 
-	public DidlDomain(final ScanFolderDomain folder) {
-		super();
-		this.folder = folder;
+	public DidlDomain(final ScanFolderDomain folder, DidlDomain parent) {
+		this(folder.getId(), folder.getName(), folder.getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME, parent);
 		folder.setDidl(this);
-		this.id = folder.getId();
-		this.title = folder.getName();
-		this.date = new Date();
-		this.description = folder.getPath();
-		this.classType = ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME;	
-		folder.getSystem().addFolder();
 	}
 
 	public DidlDomain(final SystemDomain system) {
-		super();
-		this.system = system;
+		this(system.getHostname(),"/", "root",ClassNameWcType.OBJECT_CONTAINER_STORAGE_SYSTEM,null);
+		setPath(system.getHostname() + ":");
 		system.setDidlRoot(this);
-		system.addFolder();
-		this.id = system.getHostname();
-		this.title = "/";
-		this.date = new Date();
-		this.description = "root";
-		this.classType = ClassNameWcType.OBJECT_CONTAINER_STORAGE_SYSTEM;
-		final List<DidlDomain> content = getContainerContent();
-		final DidlDomain defaultDomain = new DidlDomain(UUID.randomUUID().toString(), "Filesystem", "The Filesystem", ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME);
-		defaultDomain.setParent(this);
-		content.add(
-				defaultDomain
-		);
-		system.addFolder();		
+		system.addFolder(
+				new DidlDomain(UUID.randomUUID().toString(), "Filesystem", "The Filesystem", ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME, this)
+		);		
 	}
 
-	public DidlDomain(final String id, final String title, final String description,
-			final ClassNameWcType classType) {
-		super();
+	public DidlDomain(final String id, final String title, final String description, final ClassNameWcType classType, DidlDomain parent) {
+		this();
 		this.id = id;
 		this.title = title;
 		this.date = new Date();
 		this.description = description;
 		this.classType = classType;
+		
+		if (parent != null) {
+			setParent(parent);
+			getParent().addChild(this);
+			
+			setPath(getParent().getPath() + "/" + getTitle());
+		}
 	}
 
 	/**
@@ -243,6 +235,14 @@ public class DidlDomain implements Serializable {
 		this.title = title;
 	}
 
+	public String getPath() {
+		return path;
+	}
+	
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
 	/**
 	 * @return the date
 	 */

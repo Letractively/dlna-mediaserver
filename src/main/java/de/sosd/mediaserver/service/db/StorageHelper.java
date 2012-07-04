@@ -125,7 +125,7 @@ public class StorageHelper {
 										boolean first = true;
 										hql.append("(");
 										for (final ClassNameWcType ct : ClassNameWcType.values()) {
-											if (ct.value().startsWith(cword)) {
+											if (ct.value().toLowerCase().startsWith(cword.toLowerCase())) {
 												final StringBuffer nstmt = new StringBuffer(stmt);
 												if (! first) {
 													hql.append(" or ");
@@ -163,9 +163,11 @@ public class StorageHelper {
     	
     	
     	String result = "";
-    	final String whereStmts = hql.toString();
+    	final String whereStmts = hql.toString() ;
     	if (whereStmts.length() > 0) {
-    		result = " where " + whereStmts;
+    		result = " where didl.path like ?" + (parameters.size() + 1) + " and ("+ whereStmts+ ")";
+    	} else {
+    		result = " where didl.path like ?" + (parameters.size() + 1);
     	}
     	
     	logger.info("requested search [" +search+ "] was transformed to [" + result + "]");

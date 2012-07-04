@@ -137,7 +137,9 @@ public class ContentDirectoryService {
 
 	public void search(final Search request, final SearchResponse response,
 			final DeviceByRequestHeader device) throws JAXBException, IOException {
-		// String objectId = getLocalObjectId(request.getContainerId());
+		logger.info("Search ["+request.getContainerID()+","+request.getStartingIndex()+","+request.getRequestedCount()+","+request.getSearchCriteria()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	
+
+		final String objectId = getLocalObjectId(request.getContainerID());
 		final String filter = this.helper.translateFilter( request.getFilter());
 		final String sort = this.helper.translateSortCriteria( request.getSortCriteria() );
 		
@@ -145,7 +147,7 @@ public class ContentDirectoryService {
 		final String where = this.helper.translateSearchCriteria(request.getSearchCriteria(), searchParameters);
 		
 //		if (request.getContainerId().equals("0")) {
-		final DidlXmlCreator didl = this.storage.getAllItems(
+		final DidlXmlCreator didl = this.storage.getSearchItems(objectId,
 					where,
 					searchParameters,
 					request.getStartingIndex(), 

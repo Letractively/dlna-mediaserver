@@ -127,6 +127,8 @@ public class ScanFolderDomain implements Serializable {
 
 	public void setDidl(final DidlDomain didl) {
 		this.didl = didl;
+		didl.setFolder(this);
+		addFolder(didl);
 	}
 
 	public List<FileDomain> getFiles() {
@@ -203,7 +205,7 @@ public class ScanFolderDomain implements Serializable {
 	public int addFolder(final DidlDomain container) {
 		int result = 1;
 		setFolderCount(getFolderCount() + 1);
-		getSystem().addFolder();
+		getSystem().addFolder(container);
 		
 		for (final DidlDomain item : container.getContainerContent()) {
 			if (item.isContainer()) {
@@ -214,9 +216,9 @@ public class ScanFolderDomain implements Serializable {
 		return result;
 	}
 
-	public void removeFolder(final DidlDomain self) {
+	public void removeFolder(final DidlDomain container) {
 		setFolderCount(getFolderCount() - 1);
-		getSystem().removeFolder();
+		getSystem().removeFolder(container);
 		
 	}
 	

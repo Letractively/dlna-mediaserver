@@ -69,7 +69,8 @@ public enum ClassNameWcType {
    //  @XmlEnumValue("object.container.storageFolder")
     OBJECT_CONTAINER_STORAGE_FOLDER("object.container.storageFolder"),
    //  @XmlEnumValue("object.container.bookmarkFolder")
-    OBJECT_CONTAINER_BOOKMARK_FOLDER("object.container.bookmarkFolder");
+    OBJECT_CONTAINER_BOOKMARK_FOLDER("object.container.bookmarkFolder"),
+    OBJECT_CONTAINER_VIDEO_PHOTO_ALBUM("object.container.album.videoAlbum");
     private final String value;
 
     ClassNameWcType(final String v) {

@@ -184,13 +184,15 @@ public class SystemDomain implements Serializable {
 
 	public void setDidlRoot(final DidlDomain didlRoot) {
 		this.didlRoot = didlRoot;
+		didlRoot.setSystem(this);
+		addFolder(didlRoot);
 	}
 
 	public void setOverallSize(final long size) {
 		this.overallSize = size;
 	}
 
-	public long getOverAllSize() {
+	public long getOverallSize() {
 		return this.overallSize;
 	}
 
@@ -208,19 +210,19 @@ public class SystemDomain implements Serializable {
 
 	public void addFile(final long size) {
 		setFileCount(getFileCount() + 1);
-		setOverallSize(getOverAllSize() + size);
+		setOverallSize(getOverallSize() + size);
 	}
 
 	public void removeFile(final long size) {
 		setFileCount(getFileCount() - 1);
-		setOverallSize(getOverAllSize() - size);
+		setOverallSize(getOverallSize() - size);
 	}
 
-	public void addFolder() {
+	public void addFolder(DidlDomain didl) {
 		setFolderCount(getFolderCount() + 1);
 	}
 
-	public void removeFolder() {
+	public void removeFolder(DidlDomain didl) {
 		setFolderCount(getFolderCount() - 1);
 	}
 

@@ -1,5 +1,6 @@
 package de.sosd.mediaserver.process;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -7,15 +8,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.imageio.ImageIO;
+
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.sosd.mediaserver.bean.StringKeyValuePair;
+import de.sosd.mediaserver.domain.db.FileDomain;
+import de.sosd.mediaserver.domain.db.SystemDomain;
 import de.sosd.mediaserver.service.MPlayerFileService;
-import de.sosd.mediaserver.service.MediaserverConfiguration;
 import de.sosd.mediaserver.service.db.StorageService;
 
 @Configurable
@@ -27,15 +33,20 @@ public class MetaInfoReaderThread extends Thread {
 	@Autowired
 	private StorageService storage;
 
-	@Autowired
-	private MediaserverConfiguration cfg;
+	private final SystemDomain system;
+	
+	public MetaInfoReaderThread(final SystemDomain system) {
+		this.system = system;
+	}	
 
 	@Override
 	public void run() {
 		super.run();
 		try {
 			this.storage.setMetaInfoGenerationRunning(true);
-			createMetaInfosAsync(this.cfg.getMPlayerPath());
+			logger.info("check for missing meta-infos");
+			createMetaInfosAsync(system.getMplayerPath());
+			logger.info("meta-infos up to date");
 		} finally {
 			this.storage.setMetaInfoGenerationRunning(false);
 		}
@@ -49,11 +60,11 @@ public class MetaInfoReaderThread extends Thread {
 			final ArrayList<ConcurrentExecute> processArray = new ArrayList<ConcurrentExecute>();
 			ConcurrentExecute ce = new ConcurrentExecute();
 			processArray.add(ce);
-			final List<StringKeyValuePair> updateableFiles = new ArrayList<StringKeyValuePair>();
-			updateableFiles.addAll(this.storage.getVideoFileIdsWithoutMeta());
-			updateableFiles.addAll(this.storage.getAudioFileIdsWithoutMeta());
-
-			for (final StringKeyValuePair skvp : updateableFiles) {
+			final List<StringKeyValuePair> mplayerUpdateableFiles = new ArrayList<StringKeyValuePair>();
+			mplayerUpdateableFiles.addAll(this.storage.getVideoFileIdsWithoutMeta());
+			mplayerUpdateableFiles.addAll(this.storage.getAudioFileIdsWithoutMeta());
+			
+			for (final StringKeyValuePair skvp : mplayerUpdateableFiles) {
 				if (!fileIds.contains(skvp.getKey())) {
 					fileIds.add(skvp.getKey());
 					if (!ce.add(mplayerFile, skvp)) {
@@ -74,6 +85,31 @@ public class MetaInfoReaderThread extends Thread {
 						+ failed.size());
 			}
 		}
+		
+		final List<String> imageIoUpdateableFiles = this.storage.getImageFileIdsWithoutMeta();
+		for (String fileId : imageIoUpdateableFiles) {
+			imageIoUpdateMetaInfo(fileId);
+		}
+	}
+
+	@Transactional(propagation = Propagation.REQUIRED)
+	private void imageIoUpdateMetaInfo(String fileId) {
+		FileDomain file = storage.getFile(fileId);
+		
+		try {
+			BufferedImage read = ImageIO.read(new File(file.getPath()));
+			read.flush();
+			file.getDidl().setResolution(read.getWidth() + "x" + read.getHeight());
+			file.getDidl().setGenerateThumbnail(false);
+			// TODO set protocolInfo accordingly (depends on resolution here)
+		} catch (IOException t) {
+			// if we can't read it, clients probably can't as well -> ignore
+			file.getDidl().setGenerateThumbnail(false);
+		} catch (NullPointerException t) {
+			// if we can't read it, clients probably can't as well -> ignore (this happened on some MacOsx files ...)
+			file.getDidl().setGenerateThumbnail(false);
+		}
+		storage.store(file.getDidl());
 	}
 
 	private class ConcurrentExecute {
