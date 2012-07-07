@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -279,6 +280,8 @@ public class DLNAController {
 	@Autowired
 	private DIDLService didlService;
 	
+	private final static String[] rangeHeaders = {"RANGE", "range", "timeseekrange.dlna.org"};
+	
 	@RequestMapping(value="content/{type}/{uuid}.{extension}", method={RequestMethod.GET, RequestMethod.HEAD, RequestMethod.POST})
 	public void getMedia(
 			@PathVariable("type") final String type,
@@ -288,13 +291,19 @@ public class DLNAController {
 			@RequestParam(value="stop", required = false, defaultValue = "-1") long stop,
 			@RequestParam(required=false, value="width")Integer width,
 			@RequestParam(required=false, value="height")Integer height,
-			final HttpServletRequest request, final HttpServletResponse response) {
-		
+			final HttpServletRequest request, final HttpServletResponse response) throws IOException {
+			logRequest("getMedia", request);
 			boolean resizeTheImage = false;
 			if (type.equals("video") || type.equals("audio")) {
-				final String range = request.getHeader("RANGE");
+				String range = null;
+				for (String header : rangeHeaders) {
+					range = request.getHeader(header);
+					if (range != null) {
+						break;
+					}
+				}
 				if (range != null) {
-					logger.trace("type : " + type + " RANGE: " + range);
+					logger.info("type : " + type + " RANGE: " + range);
 					final String r0 = range.split("=")[1];
 					
 					final String[] ranges = r0.split("-");
@@ -370,6 +379,28 @@ public class DLNAController {
 			}
 		}
 	
+	private void logRequest(String method, HttpServletRequest request) throws IOException {
+		@SuppressWarnings("rawtypes")
+		Enumeration headerNames = request.getHeaderNames();
+		StringBuffer sb = new StringBuffer(method + " -> " + request.getRemoteAddr() + " -> "+request.getPathInfo()+"\n");
+		while (headerNames.hasMoreElements()) {
+			String headerName = (String) headerNames.nextElement();
+			sb.append(headerName + ": " + request.getHeader(headerName) + "\n");
+		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ServletInputStream inputStream = request.getInputStream();
+		byte[] buffer = new byte[4096];
+		int read = 0;
+		do {
+			read = inputStream.read(buffer );
+			if (read > 0 ){
+				baos.write(buffer, 0, read);
+			}
+		} while (read > 0);			
+		sb.append(baos);
+		logger.info(sb.toString());	
+	}
+
 //	@RequestMapping(value = "soap", method = {RequestMethod.POST}, headers = {"SOAPACTION=\"urn:schemas-upnp-org:service:ContentDirectory:1#Browse\""})
 //	public void contentBrowse(HttpServletRequest request,
 //			HttpServletResponse response) throws JAXBException, IOException, ParserConfigurationException
@@ -431,6 +462,8 @@ public class DLNAController {
 			})
 	public void handleX_MS_MediaReceiverRegistrarIsAuthorized(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {	
+		logRequest("handleX_MS_MediaReceiverRegistrarIsAuthorized", request);
+		
 		response.addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
 		response.addHeader("Accept-Ranges", "bytes");
 		response.addHeader("Connection", "keep-alive");	
@@ -444,18 +477,8 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);				
+
 		
-		logger.info("IsAuthorized " + request.getRemoteAddr() + " -> " + baos.toString());
 	}
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -463,6 +486,8 @@ public class DLNAController {
 			})
 	public void handleX_MS_MediaReceiverRegistrarIsValidated(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {		
+		logRequest("handleX_MS_MediaReceiverRegistrarIsValidated", request);
+		
 		response.addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
 		response.addHeader("Accept-Ranges", "bytes");
 		response.addHeader("Connection", "keep-alive");	
@@ -476,19 +501,6 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);				
-		
-		logger.info("IsValidated " + request.getRemoteAddr() + " -> " + baos.toString());
 	}
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -496,6 +508,8 @@ public class DLNAController {
 			})
 	public void handleX_MS_MediaReceiverRegistrarRegistrationRespMsg(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {	
+		logRequest("handleX_MS_MediaReceiverRegistrarRegistrationRespMsg", request);
+		
 		response.addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
 		response.addHeader("Accept-Ranges", "bytes");
 		response.addHeader("Connection", "keep-alive");	
@@ -509,19 +523,6 @@ public class DLNAController {
 							"</s:Body>" +
 						"</s:Envelope>"
 					);
-		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);				
-		
-		logger.info("RegisterDevice " + request.getRemoteAddr() + " -> " + baos.toString());
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -529,17 +530,7 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetCurrentConnectionInfo(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);
-		logger.info("GetCurrentConnectionInfo " + request.getRemoteAddr() + " -> " + baos.toString());
+		logRequest("handleConnectionManagerGetCurrentConnectionInfo", request);
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -547,17 +538,7 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerConnectionComplete(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);		
-		logger.info("ConnectionComplete " + request.getRemoteAddr() + " -> " + baos.toString());
+		logRequest("handleConnectionManagerConnectionComplete", request);
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -565,17 +546,7 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerPrepareForConnection(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);		
-		logger.info("PrepareForConnection " + request.getRemoteAddr() + " -> " + baos.toString());
+		logRequest("handleConnectionManagerPrepareForConnection", request);
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -583,17 +554,7 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetProtocolInfo(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);		
-		logger.info("GetProtocolInfo " + request.getRemoteAddr() + " -> " + baos.toString());
+		logRequest("GetProtocolInfo", request);
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {
@@ -601,17 +562,7 @@ public class DLNAController {
 			})
 	public void handleConnectionManagerGetCurrentConnectionIDs(final HttpServletRequest request,
 			final HttpServletResponse response) throws IOException, JAXBException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ServletInputStream inputStream = request.getInputStream();
-		byte[] buffer = new byte[4096];
-		int read = 0;
-		do {
-			read = inputStream.read(buffer );
-			if (read > 0 ){
-				baos.write(buffer, 0, read);
-			}
-		} while (read > 0);				
-		logger.info("GetCurrentConnectionIDs " + request.getRemoteAddr() + " -> " + baos.toString());
+		logRequest("GetCurrentConnectionIDs", request);
 	}	
 	
 	@RequestMapping(value = "soap",  method = { RequestMethod.POST }, headers = {

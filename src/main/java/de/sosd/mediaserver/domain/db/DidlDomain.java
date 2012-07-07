@@ -25,6 +25,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.hibernate.annotations.Index;
 
 import de.sosd.mediaserver.service.db.ThumbnailPurger;
@@ -44,6 +45,7 @@ public class DidlDomain implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = -212770432498342620L;
+
 	@Id
     @Column(name="id",length=36)	
     private String id;
@@ -947,12 +949,16 @@ public class DidlDomain implements Serializable {
 	      <microsoft:folderPath>Filme</microsoft:folderPath>
 	    </desc>
 		*/
-		out.append("<desc id=\"folderPath\" nameSpace=\"urn:schemas-microsoft-com:WMPNSS-1-0/\" xmlns:microsoft=\"urn:schemas-microsoft-com:WMPNSS-1-0/\">");
-		out.append("<microsoft:folderPath>");
-		out.append(getParent().getTitle());
-		out.append("</microsoft:folderPath>");
-		out.append("</desc>");		
+		if (getParent() != null) {
+			out.append("<desc id=\"folderPath\" nameSpace=\"urn:schemas-microsoft-com:WMPNSS-1-0/\" xmlns:microsoft=\"urn:schemas-microsoft-com:WMPNSS-1-0/\">");
+			out.append("<microsoft:folderPath>");
+			out.append(getXmlString(getParent().getTitle()));
+			out.append("</microsoft:folderPath>");
+			out.append("</desc>");		
+		}
 	}
+
+
 
 	private void addUserRatingMS(final StringBuffer out) {
 		/*
@@ -989,7 +995,7 @@ public class DidlDomain implements Serializable {
 		// <upnp:album>[Unbekannte Serie]</upnp:album>
 		if (getAlbum() != null) {
 			out.append("<upnp:album>");
-			out.append(getAlbum());
+			out.append(getXmlString(getAlbum()));
 			out.append("</upnp:album>");
 		}
 	}
@@ -1008,7 +1014,7 @@ public class DidlDomain implements Serializable {
 		// <upnp:artist role="Performer">[Unbekannter Autor]</upnp:artist>
 		if (getArtist() != null) {
 			out.append("<upnp:artist>");
-			out.append(getArtist());
+			out.append(getXmlString(getArtist()));
 			out.append("</upnp:artist>");
 		}
 	}
@@ -1021,7 +1027,7 @@ public class DidlDomain implements Serializable {
 	    */
 		if (getArtist() != null) {
 			out.append("<desc id=\"artist\" nameSpace=\"urn:schemas-microsoft-com:WMPNSS-1-0/\" xmlns:microsoft=\"urn:schemas-microsoft-com:WMPNSS-1-0/\"><microsoft:artistPerformer>");
-			out.append(getArtist());
+			out.append(getXmlString(getArtist()));
 			out.append("</microsoft:artistPerformer></desc>");
 		}
 	}	
@@ -1030,7 +1036,7 @@ public class DidlDomain implements Serializable {
 		// <upnp:actor>[Unbekannter Autor]</upnp:actor>
 		if (getArtist() != null) {
 			out.append("<upnp:actor>");
-			out.append(getArtist());
+			out.append(getXmlString(getArtist()));
 			out.append("</upnp:actor>");
 		}
 	}	
@@ -1039,7 +1045,7 @@ public class DidlDomain implements Serializable {
 		// <upnp:genre>[Unbekanntes Genre]</upnp:genre>
 		if (getGenre() != null) {
 			out.append("<upnp:genre>");
-			out.append(getGenre());
+			out.append(getXmlString(getGenre()));
 			out.append("</upnp:genre>");
 		}
 	}
@@ -1103,7 +1109,7 @@ public class DidlDomain implements Serializable {
 				out.append("\"");
 			}			
 			out.append(" protocolInfo=\"");
-			out.append(getProtocolInfo());
+			out.append(getXmlString(getProtocolInfo()));
 			out.append("\"");
 			if (getSampleFrequency() != null) {
 				out.append(" sampleFrequency=\"");
@@ -1163,7 +1169,7 @@ public class DidlDomain implements Serializable {
 		// <dc:creator>[Unbekannter Autor]</dc:creator>
 		if (getArtist() != null) {
 			out.append("<dc:creator>");
-			out.append(getArtist());
+			out.append(getXmlString(getArtist()));
 			out.append("</dc:creator>");
 		}
 	}
@@ -1172,7 +1178,7 @@ public class DidlDomain implements Serializable {
 		// <dc:title>5.Days.of.War</dc:title>
 		if (getTitle() != null) {
 			out.append("<dc:title>");
-			out.append(getTitle());
+			out.append(getXmlString(getTitle()));
 			out.append("</dc:title>");
 		}
 	}
@@ -1198,5 +1204,9 @@ public class DidlDomain implements Serializable {
 		
 		return false;
 	} 
+	
+	private String getXmlString(String str) {
+		return StringEscapeUtils.escapeXml(new String(str.getBytes(DidlXmlCreator.utf8),(DidlXmlCreator.utf8)));
+	}
 	
 }

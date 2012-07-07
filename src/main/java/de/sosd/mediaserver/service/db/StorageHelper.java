@@ -2,7 +2,6 @@ package de.sosd.mediaserver.service.db;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,8 @@ public class StorageHelper {
     	
     	boolean isDate = false;
     	boolean isDerivedClass = false;
-    	
+    	String cur_name = "";
+    	String cur_operator = "";
     	for (final String word : words) {
     		if (word.length() > 0) {
     			
@@ -74,29 +74,31 @@ public class StorageHelper {
     				stmt.append(word);
     			} else {
     				if ("and".equalsIgnoreCase(word) || "or".equalsIgnoreCase(word)) {
+    					if (valid) {
+    						hql.append(stmt);
+    						valid = false;
+    					}
+    					stmt = new StringBuffer();
     					stmt.append(" ");
     					stmt.append(word);
     					stmt.append(" ");
     					ps = ParserState.NAME;
     				} else {
     					switch (ps) {
-						case NAME: {
-							stmt = new StringBuffer();
+						case NAME: {			
 							valid = didlFieldSearchMap.containsKey(word);
-							stmt.append(didlFieldSearchMap.get(word));
+							cur_name = didlFieldSearchMap.get(word);
 							isDate = (word.equals("dc:date"));
 							ps = ParserState.OPERATOR;
 							break;
 							}
 						case OPERATOR: {
 							if ("=".equals(word) || ">=".equals(word) || "<=".equals(word)) {
-								stmt.append(" ");
-								stmt.append(word);
-								stmt.append(" ");
+								cur_operator = word;
 							} else {
 								isDerivedClass = ("derivedfrom".equalsIgnoreCase(word));
 								if (isDerivedClass) {
-									stmt.append(" = ");
+									cur_operator = "=";
 								} else {
 									valid = false;
 								}
@@ -107,49 +109,59 @@ public class StorageHelper {
 							}
 						case VALUE: {
 							if (valid) {
-
+								Object value = null;
 								final String cword = word.replaceAll("\"", "");
 								if (isDate) {
 									// parse as Date
 									try {
-										final Date date = sdf.parse(cword);
-										parameters.add(date);	
-										stmt.append("?" + parameters.size());
-										hql.append(stmt);
-										
+										value = sdf.parse(cword);									
 									} catch (final ParseException pe) {
 										logger.error("can't parse date [" + cword + "] in search " + search);
 									}
 								} else {
 									if (isDerivedClass) {
-										boolean first = true;
-										hql.append("(");
+										boolean foundOne = false;
+										stmt.append("(");
 										for (final ClassNameWcType ct : ClassNameWcType.values()) {
-											if (ct.value().toLowerCase().startsWith(cword.toLowerCase())) {
-												final StringBuffer nstmt = new StringBuffer(stmt);
-												if (! first) {
-													hql.append(" or ");
-												} else {
-													first = false;
+											if (ct.value().toLowerCase().startsWith(cword.toLowerCase())) {							
+												if (foundOne) {
+													stmt.append(" or ");
 												}
+												foundOne = true;
+												stmt.append(cur_name);
+												stmt.append(" ");
+												stmt.append(cur_operator);
+												stmt.append(" ");
 												parameters.add(ct);
-												nstmt.append("?" + parameters.size());
-												hql.append(nstmt);
-												
+												stmt.append("?" + parameters.size());
 											}
 										}
-										hql.append(")");
+										stmt.append(")");
+										valid = foundOne;
 									} else {
 										// parse as string
-										parameters.add(cword);
-										stmt.append("?"+ parameters.size());
-										hql.append(stmt);		
+										value = cword;
 									}
 								
 								}
+								if (value != null) {
+									parameters.add(value);
+									stmt.append(cur_name);
+									stmt.append(" ");
+									stmt.append(cur_operator);
+									stmt.append(" ");									
+									stmt.append("?"+ parameters.size());
+									
+									
+								}
+								
+								
 								isDate = false;
 								isDerivedClass = false;
 								ps = ParserState.NAME;
+								
+								cur_name = null;
+								cur_operator  = null;
 								break;
 								}
 							}
@@ -160,7 +172,10 @@ public class StorageHelper {
     			// ignore whitespaces
     		}
     	}
-    	
+		if (valid) {
+			hql.append(stmt);
+			valid = false;
+		}    	
     	
     	String result = "";
     	final String whereStmts = hql.toString() ;

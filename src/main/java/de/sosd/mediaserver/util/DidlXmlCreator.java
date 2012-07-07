@@ -1,5 +1,6 @@
 package de.sosd.mediaserver.util;
 
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +18,7 @@ import de.sosd.mediaserver.service.db.DIDLService;
 public class DidlXmlCreator {
 
 	private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	public final static Charset utf8 = Charset.forName("UTF-8");
 	
 	private int objectCounter;
 	private int totalMatches;
@@ -204,10 +206,6 @@ public class DidlXmlCreator {
 		protected void writeAlbumArtURI(StringBuffer out) {
 			out.append("<upnp:albumArtURI dlna:profileID=\"");
 			out.append(name);
-//			out.append(";resolution=");
-//			out.append(width);
-//			out.append("x");
-//			out.append(height);
 			out.append("\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\">");
 			out.append(url);
 			if (scale) {
