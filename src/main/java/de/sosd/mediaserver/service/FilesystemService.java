@@ -138,6 +138,10 @@ public class FilesystemService {
 			logger.info("scanner [found files] " + sc.getFiles().size() + " " +sc.getScanFolder().getAbsolutePath());
 			
 			fileCount += sc.getFiles().size();
+			
+			for (String fileId : this.storage.getAllFileIds(sc.getScanFolderId())) {
+				allFileIdScanFolderIdMap.put(fileId, sc.getScanFolderId());
+			}
 		}	
 		
 		if (fileCount > 0) {
@@ -147,10 +151,6 @@ public class FilesystemService {
 			}
 			for (final ScanFolderDomain sfd : system.getScanFolder()) {
 				for (final ScanContext sc : scanContexts) {
-					for (String fileId : this.storage.getAllFileIds(sc.getScanFolderId())) {
-						allFileIdScanFolderIdMap.put(fileId, sc.getScanFolderId());
-					}
-					
 					logger.info("scanner [filter] "+sc.getScanFolder().getAbsolutePath());
 					for (final File f : sc.getFiles()) {
 						final String id = this.idservice.getId(f);
