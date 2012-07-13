@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -25,6 +24,8 @@ import de.sosd.mediaserver.domain.db.SystemDomain;
 import de.sosd.mediaserver.service.db.DIDLService;
 import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.util.ScanContext;
+import de.sosd.mediaserver.util.ScanFile;
+import de.sosd.mediaserver.util.ScanFolder;
 
 @Service
 public class FilesystemService {
@@ -116,15 +117,13 @@ public class FilesystemService {
 		
 	@Transactional(propagation=Propagation.REQUIRED)
 	private void scanDirectories(final List<ScanContext> scanContexts) {
-		long fileCount = 0l;
+		long changedCount = 0l;
 		boolean systemChanged = false;
 		
 		final SystemDomain 				system 				= this.storage.getSystemProperties();
 		final List<Object> 				itemsToPurge 		= new ArrayList<Object>();	
 		final Map<String, ScanContext> 	idScanContextMap 	= new HashMap<String, ScanContext>();		
 		final Set<String> 				foundFileIds  					= new HashSet<String>();
-		final Map<String, String> 		removedFileIdScanFolderIdMap 	= new HashMap<String,String>();
-		final Map<String, String> 		allFileIdScanFolderIdMap 		= new HashMap<String,String>();	
 		final Map<String, DidlDomain> 	touchedDidlMap 					= new HashMap<String, DidlDomain>();
 
 		for (final ScanContext sc : scanContexts) {
@@ -133,55 +132,41 @@ public class FilesystemService {
 		
 		// collect all Files, no Folders!
 		for (final ScanContext sc : scanContexts) {
-			logger.info("scanner [scan] "+sc.getScanFolder().getAbsolutePath());
-			collectAllFiles(sc.getScanFolder(), sc.getFiles());
-			logger.info("scanner [found files] " + sc.getFiles().size() + " " +sc.getScanFolder().getAbsolutePath());
+			logger.info("scanner [scan] "+sc.getScanFolder());
+			List<String> knownFileIds = this.storage.getAllFileIds(sc.getScanFolderId());
+			collectNewFiles(sc.getScanFolder(), sc.getFiles(), knownFileIds, foundFileIds);
+			logger.info("scanner [found files] " + sc.getFiles().size() + " " +sc.getScanFolder());
 			
-			fileCount += sc.getFiles().size();
 			
-			for (String fileId : this.storage.getAllFileIds(sc.getScanFolderId())) {
-				allFileIdScanFolderIdMap.put(fileId, sc.getScanFolderId());
+			changedCount += sc.getFiles().size();
+			
+			knownFileIds.removeAll(foundFileIds);
+			for (String removed : knownFileIds) {
+				sc.addDeletedMediaFile(removed);
+				changedCount += 1;
 			}
 		}	
 		
-		if (fileCount > 0) {
+		if (changedCount > 0) {
 			final List<String> allDidlIds= this.storage.getAllDidlIds();	
 			for (String id : allDidlIds) {
 				touchedDidlMap.put(id, null);
 			}
 			for (final ScanFolderDomain sfd : system.getScanFolder()) {
-				for (final ScanContext sc : scanContexts) {
-					logger.info("scanner [filter] "+sc.getScanFolder().getAbsolutePath());
-					for (final File f : sc.getFiles()) {
-						final String id = this.idservice.getId(f);
-						foundFileIds.add(id);
-						if (! allFileIdScanFolderIdMap.containsKey(id)) {
-							final FileDomain fd = new FileDomain(id, null, f);					
-							if (this.didl.createDidl(fd, f, touchedDidlMap, sfd)) {
-								sc.getMediaFiles().add(fd);
-							}
+				if (idScanContextMap.containsKey(sfd.getId())) {
+					final ScanContext sc = idScanContextMap.get(sfd.getId());
+					logger.info("scanner [filter] "+sc.getScanFolder());
+					for (final ScanFile f : sc.getFiles()) {
+						final FileDomain fd = new FileDomain(f.getId(), null, f.getFile());					
+						if (this.didl.createDidl(fd, f, touchedDidlMap, sfd)) {
+							sc.getMediaFiles().add(fd);
 						}
 					}
-					logger.info("scanner [found new files] " + sc.getMediaFiles().size() + " " +sc.getScanFolder().getAbsolutePath());
+					logger.info("scanner [found new files] " + sc.getMediaFiles().size() + " " +sc.getScanFolder());
 				}
 			}	
 		}
-		
-		
-		for (final Entry<String,String> entry : allFileIdScanFolderIdMap.entrySet()) {
-			if (! foundFileIds.contains(entry.getKey())) {
-				removedFileIdScanFolderIdMap.put(entry.getKey(), entry.getValue());
-			}
-		}
-		
-		for (final Entry<String, String> entry : removedFileIdScanFolderIdMap.entrySet()) {
-			try {
-				idScanContextMap.get(entry.getValue()).addDeletedMediaFile(entry.getKey());
-			} catch (final NullPointerException npe) {
-				logger.error("NPE!", npe);
-			}
-		}
-		
+			
 		// update folders
 		for (final ScanFolderDomain sfd : system.getScanFolder()) {
 			if (idScanContextMap.containsKey(sfd.getId())) {
@@ -211,11 +196,11 @@ public class FilesystemService {
 			if (this.didl.foundUnsupportedFiles()) {
 				logger.info("scanner [dlna-unsupported] " + this.didl.getMissingClassTypeExtensions()+ ", " + this.didl.getMissingProtocolInfoExtensions());
 			}
-		}
-		
+		}		
 		logger.info("scanner [update database]");
 		this.storage.update(system, itemsToPurge);
 		logger.info("scanner [done]");
+		
 	}
 
 	private boolean updateDidl(final DidlDomain self, final ScanFolderDomain sfd, final Set<String> removedItemIds, final List<Object> itemsToPurge) {
@@ -322,13 +307,23 @@ public class FilesystemService {
 //		return changedSelf || changedChilds;
 //	}
 
-	private void collectAllFiles(final File dir, final List<File> list) {
-		if ((dir.listFiles() != null) && dir.isDirectory() && dir.canRead()) {
-			for (final File f : dir.listFiles()) {
+	private void collectNewFiles(final ScanFolder folder, final List<ScanFile> list, final List<String> knownFileIds, Set<String> foundFileIds) {
+		if ((folder.getFile().listFiles() != null) && folder.getFile().isDirectory() && folder.getFile().canRead()) {
+			for (final File f : folder.getFile().listFiles()) {
+				final String id = this.idservice.getId(f);			
 				if (f.isFile()) {
-					list.add(f);
+					foundFileIds.add(id);
+					if (! knownFileIds.contains(id)) {
+						ScanFile addedFile = folder.addFile(id, f);
+						if (addedFile != null) {
+							list.add(addedFile);
+						}
+					}
 				} else {
-					collectAllFiles(f,list);
+					ScanFolder addedFolder = folder.addFolder(id, f);
+					if (addedFolder !=  null) {
+						collectNewFiles(addedFolder,list,knownFileIds,foundFileIds);
+					}
 				}
 			}
 		}

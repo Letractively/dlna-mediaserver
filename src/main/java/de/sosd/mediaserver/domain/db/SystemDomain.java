@@ -242,4 +242,84 @@ public class SystemDomain implements Serializable {
 		this.metaInfoGenerationRunning = metaInfoGenerationRunning;
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((hostname == null) ? 0 : hostname.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SystemDomain other = (SystemDomain) obj;
+		if (hostname == null) {
+			if (other.hostname != null)
+				return false;
+		} else if (!hostname.equals(other.hostname))
+			return false;
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		final int maxLen = 10;
+		return "SystemDomain ["
+				+ (hostname != null ? "hostname=" + hostname + ", " : "")
+				+ (lastDataChange != null ? "lastDataChange=" + lastDataChange
+						+ ", " : "")
+				+ "folderCount="
+				+ folderCount
+				+ ", fileCount="
+				+ fileCount
+				+ ", overallSize="
+				+ overallSize
+				+ ", updateId="
+				+ updateId
+				+ ", "
+				+ (name != null ? "name=" + name + ", " : "")
+				+ (previewCache != null ? "previewCache=" + previewCache + ", "
+						: "")
+				+ (usn != null ? "usn=" + usn + ", " : "")
+				+ (networkInterface != null ? "networkInterface="
+						+ networkInterface + ", " : "")
+				+ (mplayerPath != null ? "mplayerPath=" + mplayerPath + ", "
+						: "")
+				+ (mencoderPath != null ? "mencoderPath=" + mencoderPath + ", "
+						: "")
+				+ "online="
+				+ online
+				+ ", "
+				+ (metaInfoGenerationRunning != null ? "metaInfoGenerationRunning="
+						+ metaInfoGenerationRunning + ", "
+						: "")
+				+ (thumbnailGenerationRunning != null ? "thumbnailGenerationRunning="
+						+ thumbnailGenerationRunning + ", "
+						: "")
+				+ (scanFolder != null ? "scanFolder="
+						+ scanFolder.subList(0,
+								Math.min(scanFolder.size(), maxLen)) + ", "
+						: "")
+				+ (didlRoot != null ? "didlRoot=" + didlRoot : "") + "]";
+	}
+
+
+	
+	
 }

@@ -1208,5 +1208,54 @@ public class DidlDomain implements Serializable {
 	private String getXmlString(String str) {
 		return StringEscapeUtils.escapeXml(new String(str.getBytes(DidlXmlCreator.utf8),(DidlXmlCreator.utf8)));
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DidlDomain other = (DidlDomain) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "DidlDomain ["
+				+ (id != null ? "id=" + id + ", " : "")
+				+ (title != null ? "title=" + title + ", " : "")
+				+ (path != null ? "path=" + path + ", " : "")
+				+ (videoCodec != null ? "videoCodec=" + videoCodec + ", " : "")
+				+ (audioCodec != null ? "audioCodec=" + audioCodec + ", " : "")
+				+ (date != null ? "date=" + date + ", " : "")
+				+ (description != null ? "description=" + description + ", "
+						: "")
+			;
+	}
+	
 	
 }

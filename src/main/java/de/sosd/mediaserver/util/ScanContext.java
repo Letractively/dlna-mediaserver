@@ -11,26 +11,26 @@ import de.sosd.mediaserver.domain.db.FileDomain;
 public class ScanContext {
 
 	private final String scanFolderId;
-	private final File scanFolder;
+	private final ScanFolder scanFolder;
 	
-	private final List<File> files = new ArrayList<File>();
+	private final List<ScanFile> files = new ArrayList<ScanFile>();
 	private final List<FileDomain> mediaFiles = new ArrayList<FileDomain>();
 	private final Set<String> deletedFileIds = new HashSet<String>();
 	
 	public ScanContext(final String scanFolderId, final File dir) {
 		this.scanFolderId = scanFolderId;
-		this.scanFolder = dir;
+		this.scanFolder = new ScanFolder(scanFolderId, dir);
 	}
 
 	public String getScanFolderId() {
 		return this.scanFolderId;
 	}
 
-	public File getScanFolder() {
+	public ScanFolder getScanFolder() {
 		return this.scanFolder;
 	}
 	
-	public List<File> getFiles() {
+	public List<ScanFile> getFiles() {
 		return this.files;
 	}
 

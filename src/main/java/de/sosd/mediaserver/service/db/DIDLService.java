@@ -1,6 +1,5 @@
 package de.sosd.mediaserver.service.db;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,7 +17,8 @@ import de.sosd.mediaserver.domain.db.ClassNameWcType;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderDomain;
-import de.sosd.mediaserver.service.IdService;
+import de.sosd.mediaserver.util.ScanFile;
+import de.sosd.mediaserver.util.ScanFolder;
 
 @Service
 public class DIDLService {
@@ -158,11 +158,6 @@ public class DIDLService {
 		}
 		
 	}
-	
-	
-	@Autowired
-	private IdService idservice;
-	
 
 	public String getProtocolInfoForExtension(final String extension) {
 		return extensionProtocolInfoMap.get(extension.toUpperCase());
@@ -178,13 +173,13 @@ public class DIDLService {
 		 return null;
 	}
 	
-	public boolean createDidl(final FileDomain fd, final File f, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
+	public boolean createDidl(final FileDomain fd, final ScanFile f, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
 		final String extension = getExtension(fd);
 		final ClassNameWcType classType = extensionClassTypeMap.get(extension);
 		final String contentProtocol = extensionProtocolInfoMap.get(extension);
 		
 		if (evaluate(fd, extension, classType, contentProtocol)) {
-			DidlDomain parent = createDidlContainerTree(f.getParentFile(), existingMap, sfd);
+			DidlDomain parent = createDidlContainerTree(f.getParent(), existingMap, sfd);
 			DidlDomain didl = new DidlDomain(getTitle(fd),  fd, classType, fd.getId() + "." + extension,  contentProtocol, parent);
 			existingMap.put(didl.getId(), didl);
 			
@@ -237,9 +232,8 @@ public class DIDLService {
 		return null;
 	}
 
-	private DidlDomain createDidlContainerTree(final File file, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
-		final String id = this.idservice.getId(file);
-		
+	private DidlDomain createDidlContainerTree(final ScanFolder scanFolder, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
+		String id = scanFolder.getId();
 		if (existingMap.containsKey(id)) {
 			// don't create anything
 			
@@ -254,9 +248,9 @@ public class DIDLService {
 				return didl;
 			}
 		} else {
-			final DidlDomain parent = createDidlContainerTree(file.getParentFile(), existingMap, sfd);
+			final DidlDomain parent = createDidlContainerTree(scanFolder.getParent(), existingMap, sfd);
 			
-			DidlDomain didl = new DidlDomain(id, file.getName(), file.getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_FOLDER, parent);
+			DidlDomain didl = new DidlDomain(id, scanFolder.getFile().getName(), scanFolder.getFile().getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_FOLDER, parent);
 			existingMap.put(id, didl);
 			sfd.addFolder(didl);
 			return didl;
