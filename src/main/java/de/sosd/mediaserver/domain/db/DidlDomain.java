@@ -675,7 +675,9 @@ public class DidlDomain implements Serializable {
 	 */
 
 	public void setReference(final DidlDomain reference) {
-		reference.getReferences().add(this);
+		if (reference != null) {
+			reference.getReferences().add(this);
+		}
 		this.reference = reference;
 	}
 	

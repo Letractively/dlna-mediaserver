@@ -23,6 +23,7 @@ import de.sosd.mediaserver.domain.db.ScanFolderState;
 import de.sosd.mediaserver.domain.db.SystemDomain;
 import de.sosd.mediaserver.service.db.DIDLService;
 import de.sosd.mediaserver.service.db.StorageService;
+import de.sosd.mediaserver.util.DidlChangeMap;
 import de.sosd.mediaserver.util.ScanContext;
 import de.sosd.mediaserver.util.ScanFile;
 import de.sosd.mediaserver.util.ScanFolder;
@@ -40,8 +41,6 @@ public class FilesystemService {
 	
 	@Autowired
 	private DIDLService didl;
-	
-
 	
 	public boolean addScanDirectory(final File directory) {
 		try {
@@ -64,11 +63,8 @@ public class FilesystemService {
 				system.getScanFolder().add(scanFolder);
 				scanFolder.setSystem(system);
 				scanFolder.setDidl(this.didl.createDidlContainer(scanFolder, system.getDidlRoot()));
-				
-				
 				this.storage.store(system);
-				
-				logger.info("new scan-directory add : " + scanFolder.getPath());
+				logger.info("added new scan-directory : " + scanFolder.getPath());
 			}
 		}
 	}
@@ -121,10 +117,10 @@ public class FilesystemService {
 		boolean systemChanged = false;
 		
 		final SystemDomain 				system 				= this.storage.getSystemProperties();
-		final List<Object> 				itemsToPurge 		= new ArrayList<Object>();	
+		final Set<Object> 				itemsToPurge 		= new HashSet<Object>();	
 		final Map<String, ScanContext> 	idScanContextMap 	= new HashMap<String, ScanContext>();		
 		final Set<String> 				foundFileIds  					= new HashSet<String>();
-		final Map<String, DidlDomain> 	touchedDidlMap 					= new HashMap<String, DidlDomain>();
+		final DidlChangeMap 	touchedDidlMap 					= new DidlChangeMap();
 
 		for (final ScanContext sc : scanContexts) {
 			idScanContextMap.put(sc.getScanFolderId(), sc);
@@ -150,7 +146,7 @@ public class FilesystemService {
 		if (changedCount > 0) {
 			final List<String> allDidlIds= this.storage.getAllDidlIds();	
 			for (String id : allDidlIds) {
-				touchedDidlMap.put(id, null);
+				touchedDidlMap.addDidl(id, null);
 			}
 			for (final ScanFolderDomain sfd : system.getScanFolder()) {
 				if (idScanContextMap.containsKey(sfd.getId())) {
@@ -177,7 +173,7 @@ public class FilesystemService {
 					logger.info("scanner [add file] " + fd.getName() + "\t\t(" + fd.getPath() + ")");
 				}				
 				if (changedFiles || !sc.getDeletedMediaFiles().isEmpty()) {
-					changedFiles |= updateDidl(sfd.getDidl(), sfd, sc.getDeletedMediaFiles(), itemsToPurge);
+					changedFiles |= updateDidl(sfd.getDidl(), sfd, touchedDidlMap,sc.getDeletedMediaFiles(), itemsToPurge);
 				}
 				// remove scanfolder mark
 				sfd.setScanState(ScanFolderState.IDLE);
@@ -198,114 +194,64 @@ public class FilesystemService {
 			}
 		}		
 		logger.info("scanner [update database]");
-		this.storage.update(system, itemsToPurge);
+		this.storage.update(system, new ArrayList<Object>(itemsToPurge));
 		logger.info("scanner [done]");
 		
 	}
-
-	private boolean updateDidl(final DidlDomain self, final ScanFolderDomain sfd, final Set<String> removedItemIds, final List<Object> itemsToPurge) {
-		boolean changedChilds = false;
-		boolean changedSelf = false;
-		final List<DidlDomain> childs = new ArrayList<DidlDomain>(self.getContainerContent());
-		// before adding new childs traverse existing ones and remove deleted ones
-		for (final DidlDomain item : childs) {
-			if (removedItemIds.contains(item.getId())) {
-				// remove child
-				final FileDomain file = item.getFile();
-				changedSelf = self.removeChild(item);			
-				item.setFile(null);
-				itemsToPurge.add(item);
-				
-				changedSelf |= file.getParent().removeFile(file);
-				itemsToPurge.add(file);
-				
-				logger.info("scanner [removed file] " + file.getName() + "\t\t(" + file.getPath() + ")");
-				// delete item and file?			
-			} else {
-				// check childs for changes
-				if (item.isContainer()) {
-					changedChilds |= updateDidl(item, sfd, removedItemIds, itemsToPurge);
-				}
+	@Transactional(propagation=Propagation.REQUIRED)
+	private boolean updateDidl(final DidlDomain root, final ScanFolderDomain sfd, DidlChangeMap map, final Set<String> removedItemIds, final Set<Object> itemsToPurge) {
+		boolean changed = false;
+		// remove files first
+		for (String removedId : removedItemIds) {
+			if (map.hasDidl(removedId)) {
+				DidlDomain item = map.getDidl(removedId);
+				changed |= removeDidl(root, map,item, itemsToPurge);
 			}
 		}
-	
-		if (self.isContainer() && self.getContainerContent().isEmpty()) {
-			// check if empty
-			self.getParent().removeChild(self);
-			sfd.removeFolder(self);
-			itemsToPurge.add(self);
-			logger.info("scanner [removed folder] " + self.getTitle() + " [" + self.getId() + "]");
-			return true;
-		}
-		
-		if (changedSelf) {
-			self.increaseUpdateId();
-		}
-		
-		return changedSelf || changedChilds;
+		return changed;
 	}
-
-//	private int countDidl(DidlDomain parent) {
-//		int result = 1;
-//		for (DidlDomain didl : parent.getContainerContent()) {
-//			if (didl.isContainer()) {
-//				result += countDidl(didl);
+	@Transactional(propagation=Propagation.REQUIRED)
+	private boolean removeDidl(DidlDomain root, DidlChangeMap map,
+			DidlDomain item, Set<Object> itemsToPurge) {
+		if (root.getId().equals(item.getId())) {
+			return false;
+		}
+		
+		boolean changed = false;		
+		DidlDomain parent;
+		if (item.getParent() != null) {
+			parent = map.getDidl(item.getParent().getId());
+			// remove child
+			final FileDomain file = item.getFile();
+			changed = parent.removeChild(item);			
+			storage.store(parent);
+//			item.setFile(null);
+//			item.setParent(null);
+//			item.setReference(null);
+//			for (DidlDomain ref : item.getReferences()) {
+//				removeDidl(root, map, ref, itemsToPurge);
 //			}
-//		}
-//		return result;
-//	}
-//
-//	private boolean updateDidl(DidlDomain self,
-//			Map<String, List<DidlDomain>> didlParentIdDidlMap, Set<String> removedItemIds, List<Object> itemsToPurge) {
-//		boolean changedChilds = false;
-//		boolean changedSelf = false;
-//		List<DidlDomain> childs = new ArrayList<DidlDomain>(self.getContainerContent());
-//		// before adding new childs traverse existing ones and remove deleted ones
-//		for (DidlDomain item : childs) {
-//			if (removedItemIds.contains(item.getId())) {
-//				// remove child
-//				FileDomain file = item.getFile();
-//				changedSelf = self.getContainerContent().remove(item);			
-//				item.setParent(null);
-//				item.setFile(null);
-//				itemsToPurge.add(item);
-//				
-//				changedSelf |= file.getParent().removeFile(file);
-//				itemsToPurge.add(file);
-//				
-//				logger.info("scanner [removed file] " + file.getName() + "\t\t(" + file.getPath() + ")");
-//				// delete item and file?			
-//			} else {
-//				// check childs for changes
-//				changedChilds |= updateDidl(item, didlParentIdDidlMap, removedItemIds, itemsToPurge);
-//			}			
-//		}
-//		
-//		// add new childs to own container
-//		if (didlParentIdDidlMap.containsKey(self.getId())) {
-//			List<DidlDomain> content = didlParentIdDidlMap.remove(self.getId());
-//			
-//			// add 
-//			for (DidlDomain item : content) {
-//				item.setParent(self);
-//				changedSelf |= self.getContainerContent().add(item);
-//			}	
-//		}
-//		
-//		if (self.isContainer() && self.getContainerContent().isEmpty()) {
-//			// check if empty
-//			self.getParent().getContainerContent().remove(self);
-//			self.setParent(null);
-//			itemsToPurge.add(self);
-//			logger.info("scanner [removed folder] " + self.getTitle() + " [" + self.getId() + "]");
-//			return true;
-//		}
-//		
-//		if (changedSelf) {
-//			self.increaseUpdateId();
-//		}
-//		return changedSelf || changedChilds;
-//	}
+//			for (DidlDomain content : item.getContainerContent()) {
+//				removeDidl(root, map, content, itemsToPurge);
+//			}
+//			item.getContainerContent().clear();
+			
+			if (file != null) {
+				changed |= file.getParent().removeFile(file);
+//				file.setParent(null);
+//				file.setDidl(null);
+//				storage.removeFile(file);
+				logger.info("scanner [removed file] " + file.getName() + "\t(" + file.getPath() + ")");	
+			} else {
+				logger.info("scanner [removed folder] " + item.getTitle() + "\t(" + item.getId() + ")");
+			}
+			
+			if (parent.getContainerContent().isEmpty()) {
+				changed |= removeDidl(root, map, parent, itemsToPurge);
+			}
+		}
+		return changed;
+	}
 
 	private void collectNewFiles(final ScanFolder folder, final List<ScanFile> list, final List<String> knownFileIds, Set<String> foundFileIds) {
 		if ((folder.getFile().listFiles() != null) && folder.getFile().isDirectory() && folder.getFile().canRead()) {

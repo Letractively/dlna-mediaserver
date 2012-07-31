@@ -227,8 +227,18 @@ public class StorageService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void removeFile(final String id) {
 		final FileDomain d = this.manager.find(FileDomain.class, id);
-		this.manager.remove(d);		
+		removeFile(d);
 	}
+	
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void removeFile(FileDomain file) {
+		this.manager.remove(file);			
+	}	
+	
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void removeDidl(DidlDomain item) {
+		this.manager.remove(item);	
+	}	
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public String getPathForFile(final String id) {
@@ -390,6 +400,9 @@ public class StorageService {
 	public List<DidlDomain> getAllDidlWithContentSizeNull() {
 		return this.manager.createQuery("select didl from DIDL as didl where didl.containerContentSize is null").getResultList();
 	}
+
+
+
 
 
 

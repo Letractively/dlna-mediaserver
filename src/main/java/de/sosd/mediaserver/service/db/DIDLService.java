@@ -17,6 +17,7 @@ import de.sosd.mediaserver.domain.db.ClassNameWcType;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderDomain;
+import de.sosd.mediaserver.util.DidlChangeMap;
 import de.sosd.mediaserver.util.ScanFile;
 import de.sosd.mediaserver.util.ScanFolder;
 
@@ -119,9 +120,10 @@ public class DIDLService {
     private final static Set<String> unsupportedExtensionsMissingClassType = new HashSet<String>();
     private final static Set<String> unsupportedExtensionsMissingProtocolInfo = new HashSet<String>();
     
-	@Autowired
-	private StorageService storage;
-	
+    
+    @Autowired
+    private StorageService storage;
+    
 	public String getMimeTypeForExtension(final String extension) {
 		final String mime = extensionHttpMimeMap.get(extension.toUpperCase());
 		if (mime == null) {
@@ -173,17 +175,18 @@ public class DIDLService {
 		 return null;
 	}
 	
-	public boolean createDidl(final FileDomain fd, final ScanFile f, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
+	public boolean createDidl(final FileDomain fd, final ScanFile f, final DidlChangeMap touchedDidlMap, ScanFolderDomain sfd) {
 		final String extension = getExtension(fd);
 		final ClassNameWcType classType = extensionClassTypeMap.get(extension);
 		final String contentProtocol = extensionProtocolInfoMap.get(extension);
 		
 		if (evaluate(fd, extension, classType, contentProtocol)) {
-			DidlDomain parent = createDidlContainerTree(f.getParent(), existingMap, sfd);
+			DidlDomain parent = createDidlContainerTree(f.getParent(), touchedDidlMap, sfd);
 			DidlDomain didl = new DidlDomain(getTitle(fd),  fd, classType, fd.getId() + "." + extension,  contentProtocol, parent);
-			existingMap.put(didl.getId(), didl);
+			touchedDidlMap.addDidl(didl.getId(), didl);
 			
 			updateParentClassType(didl, parent);
+			storage.store(didl);
 			return true;
 		}
 		
@@ -232,28 +235,17 @@ public class DIDLService {
 		return null;
 	}
 
-	private DidlDomain createDidlContainerTree(final ScanFolder scanFolder, final Map<String, DidlDomain> existingMap, ScanFolderDomain sfd) {
+	private DidlDomain createDidlContainerTree(final ScanFolder scanFolder, final DidlChangeMap touchedDidlMap, ScanFolderDomain sfd) {
 		String id = scanFolder.getId();
-		if (existingMap.containsKey(id)) {
-			// don't create anything
-			
-			DidlDomain didl = existingMap.get(id);
-			
-			if (didl == null) {
-				// is not cached
-				didl = storage.getDidl(id);
-				existingMap.put(id, didl);
-				return didl;
-			} else {
-				return didl;
-			}
+		if (touchedDidlMap.hasDidl(id)) {
+			// don't create anything		
+			return touchedDidlMap.getDidl(id);
 		} else {
-			final DidlDomain parent = createDidlContainerTree(scanFolder.getParent(), existingMap, sfd);
-			
-			DidlDomain didl = new DidlDomain(id, scanFolder.getFile().getName(), scanFolder.getFile().getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_FOLDER, parent);
-			existingMap.put(id, didl);
+			final DidlDomain parent = createDidlContainerTree(scanFolder.getParent(), touchedDidlMap, sfd);		
+			DidlDomain didl = new DidlDomain(id, scanFolder.getFile().getName(), scanFolder.getFile().getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_FOLDER, parent);			
 			sfd.addFolder(didl);
-			return didl;
+			storage.store(didl);
+			return touchedDidlMap.addDidl(id, didl);
 		}
 	}
 
