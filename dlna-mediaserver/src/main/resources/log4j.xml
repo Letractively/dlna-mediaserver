@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+	<!-- Appenders -->
+	<appender name="console" class="org.apache.log4j.ConsoleAppender">
+		<param name="Target" value="System.out" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%5p %d{ISO8601} %c - %m%n" />
+		</layout>
+	</appender>
+	
+	<appender name="file" class="org.apache.log4j.RollingFileAppender">
+	    <!-- The active file to log to -->
+	    <param name="file" value="${catalina.base}/logs/mediaserver.log" />
+	    <param name="append" value="true" />
+	    <param name="encoding" value="UTF-8" />
+		<param name="maxBackupIndex" value="5" />
+<!-- 		<param name="bufferedIO" value="true" /> -->
+		
+	    <layout class="org.apache.log4j.PatternLayout">
+	            <!-- The log message pattern -->
+	            <param name="ConversionPattern" value="%5p %d{ISO8601} %c - %m%n" />
+	    </layout>
+    </appender>
+   
+	<appender name="tasks" class="org.apache.log4j.RollingFileAppender">
+	    <!-- The active file to log to -->
+	    <param name="file" value="${catalina.base}/logs/mediaserver-task.log" />
+	    <param name="append" value="true" />
+	    <param name="encoding" value="UTF-8" />
+		<param name="maxBackupIndex" value="5" />
+<!-- 		<param name="bufferedIO" value="true" /> -->
+		
+	    <layout class="org.apache.log4j.PatternLayout">
+	            <!-- The log message pattern -->
+	            <param name="ConversionPattern" value="%5p %d{ISO8601} %c - %m%n" />
+	    </layout>
+    </appender>   
+  
+ 	<appender name="spring" class="org.apache.log4j.RollingFileAppender">
+	    <!-- The active file to log to -->
+	    <param name="file" value="${catalina.base}/logs/mediaserver-spring.log" />
+	    <param name="append" value="true" />
+	    <param name="encoding" value="UTF-8" />
+		<param name="maxBackupIndex" value="5" />
+<!-- 		<param name="bufferedIO" value="true" /> -->
+		
+	    <layout class="org.apache.log4j.PatternLayout">
+	            <!-- The log message pattern -->
+	            <param name="ConversionPattern" value="%5p %d{ISO8601} %c - %m%n" />
+	    </layout>
+    </appender>    
+        	
+	<!-- Application Loggers -->
+<!-- 	<logger name="de.sosd.mediaserver.controller"> -->
+<!-- 		<level value="info" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+	
+<!-- 	<logger name="de.sosd.mediaserver.domain"> -->
+<!-- 		<level value="info" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+	
+<!-- 	<logger name="de.sosd.mediaserver.service"> -->
+<!-- 		<level value="info" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+	
+<!-- 	<logger name="de.sosd.mediaserver.http"> -->
+<!-- 		<level value="info" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+	
+<!-- 	<logger name="de.sosd.mediaserver.process"> -->
+<!-- 		<level value="info" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger>			 -->
+	
+	<logger name="de.sosd.mediaserver.task.ProcessWatchdogService">
+		<level value="info" />
+		<appender-ref ref="tasks"/>
+	</logger>
+	
+	<!-- 3rdparty Loggers -->
+	<logger name="org.springframework">
+		<level value="info" />
+		<appender-ref ref="spring" />
+	</logger>
+	
+<!-- 	<logger name="org.springframework.beans"> -->
+<!-- 		<level value="error" /> -->
+<!-- 		<appender-ref ref="console" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+	
+<!-- 	<logger name="org.springframework.context"> -->
+<!-- 		<level value="error" /> -->
+<!-- 		<appender-ref ref="console" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+
+<!-- 	<logger name="org.springframework.web"> -->
+<!-- 		<level value="error" /> -->
+<!-- 		<appender-ref ref="console" /> -->
+<!-- 		<appender-ref ref="file"/> -->
+<!-- 	</logger> -->
+
+	<!-- Root Logger -->
+	<root>
+		<priority value="info" />
+ 		<appender-ref ref="console" />
+ 		<appender-ref ref="file"/> 
+	</root>
+	
+</log4j:configuration>
