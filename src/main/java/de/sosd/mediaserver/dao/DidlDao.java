@@ -60,7 +60,7 @@ public class DidlDao {
 		if (!searchPaths.isEmpty()) {
 			String searchPath = searchPaths.get(0) + "%";
 			// " order by didl.classType desc, didl.parent.id,  didl.title asc, didl.date desc" +
-			final Query q = this.manager.createQuery("select didl from DIDL as didl" + where + filter + " and didl.online = ?" + (searchParameters.size() +1) + " " + sort);
+			final Query q = this.manager.createQuery("select didl from DIDL as didl" + where + filter + " and didl.online = ?" + (searchParameters.size() +2) + " " + sort);
 			
 			int idx = 1;
 			for (final Object param : searchParameters) {
@@ -89,7 +89,7 @@ public class DidlDao {
 	
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public Long getSearchItemsCount(String searchPath, final String where, final ArrayList<Object> searchParameters, final String filter) {
-		final Query q = this.manager.createQuery("select count(didl) from DIDL as didl" + where + filter +" and didl.online = ?" + (searchParameters.size() +1));
+		final Query q = this.manager.createQuery("select count(didl) from DIDL as didl" + where + filter +" and didl.online = ?" + (searchParameters.size() +2));
 		
 		int idx = 1;
 		for (final Object param : searchParameters) {
