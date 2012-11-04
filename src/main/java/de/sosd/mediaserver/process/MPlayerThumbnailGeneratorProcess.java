@@ -21,10 +21,11 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.sosd.mediaserver.dao.DidlDao;
+import de.sosd.mediaserver.dao.FilesystemDao;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
 import de.sosd.mediaserver.domain.db.ThumbnailDomain;
-import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.task.ProcessWatchdogService;
 
 @Configurable
@@ -41,9 +42,13 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 	private final ByteArrayOutputStream out;
 	private final ByteArrayOutputStream err;
 	private final File mplayer;
-		
+
 	@Autowired
-	private StorageService storage;
+	private FilesystemDao fsDao;
+	
+	@Autowired
+	private DidlDao didlDao;
+	
 	private final String path;
 	private boolean seekable;
 
@@ -104,7 +109,7 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 				throw new IOException("can't create tempdirectory to store previews ..." + this.tempFolder.getAbsolutePath());
 			}
 //		}		
-		final DidlDomain didl = this.storage.getFile(this.fileId).getDidl();
+		final DidlDomain didl = this.fsDao.getFile(this.fileId).getDidl();
 //		if (didl.getPassedMPlayer() != null && !didl.getPassedMPlayer()) {
 			// maybe the file was not readable so fetch it from our server ;)
 			// int stop = (int)(didl.getSize() / 10);
@@ -154,7 +159,7 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 	private void update() {
 		debug();
 		this.thumbnailFolder.mkdirs();
-		final FileDomain fd = this.storage.getFile(this.fileId);
+		final FileDomain fd = this.fsDao.getFile(this.fileId);
 		final DidlDomain dd = fd.getDidl();
 		File screenshot = new File(this.tempFolder, "00000001.jpg");
 		long max_size = 0l;
@@ -184,14 +189,14 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 				dd.setThumbnail(thumb);
 				dd.increaseUpdateId();
 				dd.setGenerateThumbnail(false);
-				this.storage.store(fd);	
+				this.fsDao.store(fd);	
 			} else {
 				if (this.out.toString().contains("Stream not seekable!") && ((dd.getSeekable() == null) || dd.getSeekable().booleanValue())) {
 					dd.setSeekable(false);
-					this.storage.store(dd);	
+					this.didlDao.store(dd);	
 				} else {
 					dd.setGenerateThumbnail(false);
-					this.storage.store(dd);	
+					this.didlDao.store(dd);	
 					logger.error("update add thumb for [" + dd.getId() + "] failed, no thumbnail created in " + this.tempFolder.getAbsolutePath());
 					logger.error("errors : \n" + this.err.toString());
 					logger.error("console : \n" + this.out.toString());
@@ -227,10 +232,10 @@ public class MPlayerThumbnailGeneratorProcess extends DefaultExecuteResultHandle
 	@Transactional(propagation=Propagation.REQUIRED)
 	public void notifyProcessKilled() {
 		debug();
-		final FileDomain fd = this.storage.getFile(this.fileId);
+		final FileDomain fd = this.fsDao.getFile(this.fileId);
 		final DidlDomain dd = fd.getDidl();
 		dd.setGenerateThumbnail(false);
-		this.storage.store(dd);	
+		this.didlDao.store(dd);	
 	}
 
 	private void debug() {

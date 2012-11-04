@@ -9,10 +9,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.sosd.mediaserver.dao.SystemDao;
 import de.sosd.mediaserver.domain.db.SystemDomain;
 import de.sosd.mediaserver.process.MetaInfoReaderThread;
 import de.sosd.mediaserver.process.ThumbnailCreationThread;
-import de.sosd.mediaserver.service.db.StorageService;
 
 /***
 AVI file format detected.
@@ -124,14 +124,17 @@ public class MPlayerFileService {
 	public final static ShutdownHookProcessDestroyer PROCESS_SHUTDOWN_HOOK = new ShutdownHookProcessDestroyer();
 	
 	@Autowired
-	private StorageService storage;
+	private SystemDao systemDao;
+	
+	@Autowired
+	private MediaserverConfiguration cfg;
 	
 	private Thread metaInfoReader = null;
 	private Thread thumbnailCreator = null;
 	
 	
 	public void createMetaInfos() {
-		final SystemDomain system = this.storage.getSystemProperties();
+		final SystemDomain system = this.systemDao.getSystem(cfg.getUSN());
 		final Boolean running = system.getMetaInfoGenerationRunning();
 		if (((running == null) || !running.booleanValue())) {
 			if (this.metaInfoReader != null) {
@@ -145,7 +148,7 @@ public class MPlayerFileService {
 	}
 	
 	public void createThumbnails() {
-		final SystemDomain system = this.storage.getSystemProperties();
+		final SystemDomain system = this.systemDao.getSystem(cfg.getUSN());
 		final Boolean running = system.getThumbnailGenerationRunning();
 		if (((running == null) || !running.booleanValue())) {
 			if (this.thumbnailCreator != null) {

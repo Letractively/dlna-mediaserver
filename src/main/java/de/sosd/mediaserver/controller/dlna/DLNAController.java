@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.controller;
+package de.sosd.mediaserver.controller.dlna;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,11 +43,12 @@ import org.upnp.schemas.service.contentdirectory._1.Search;
 import org.upnp.schemas.service.contentdirectory._1.SearchResponse;
 import org.xmlsoap.schemas.soap.envelope.Envelope;
 
+import de.sosd.mediaserver.bean.WebappLocationBean;
+import de.sosd.mediaserver.dao.FilesystemDao;
 import de.sosd.mediaserver.service.MediaserverConfiguration;
 import de.sosd.mediaserver.service.ThumbnailService;
-import de.sosd.mediaserver.service.db.DIDLService;
-import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.service.dlna.ContentDirectoryService;
+import de.sosd.mediaserver.service.dlna.DIDLService;
 import de.sosd.mediaserver.util.DeviceByRequestHeader;
 import de.sosd.mediaserver.util.PreferredNamespaceMapper;
 
@@ -216,13 +217,13 @@ public class DLNAController {
 					GetSearchCapabilities.class, GetSearchCapabilitiesResponse.class);
 	}
 	
-	private String getCapablities() {
+	private String getCapablities(WebappLocationBean wlb) {
 		final String result = new String(CAPABILITIES);
 
 		return result
-				.replace("$SERVER_URL", this.cfg.getHttpServerUrl())
+				.replace("$SERVER_URL", wlb.getUrlString())
 				// .replace("$SERVER_BASE_URL", cfg.getHttpServerUrl() + "/")
-				.replace("$SERVER_PRESENTATION_URL", this.cfg.getHttpServerUrl()) 
+				.replace("$SERVER_PRESENTATION_URL", wlb.getUrlString()) 
 				// WebUserInterface.getMainRef())
 				// .replace("$SERVER_CONTENT_CONTROL_URL", "/mediaserver" +
 				// getContentControlRef())
@@ -259,7 +260,7 @@ public class DLNAController {
 //		response.addHeader("Expires", "0");
 
 		try {
-			final String capablities = getCapablities();
+			final String capablities = getCapablities(getWebappLocation(request));
 			response.addHeader("Content-Type", "text/xml; charset=\"utf-8\"");
 			response.addHeader("Content-Length", "" + capablities.getBytes().length);
 			response.addHeader("Date", sdf.format(new Date(System.currentTimeMillis())) + " GMT");
@@ -274,8 +275,12 @@ public class DLNAController {
 
 	}
 
+	private WebappLocationBean getWebappLocation(HttpServletRequest request) {
+		return cfg.getWebappLocation(request.getScheme(), request.getServerName(), request.getServerPort(),request.getContextPath());
+	}
+
 	@Autowired
-	private StorageService storage;
+	private FilesystemDao systemDao;
 	
 	@Autowired
 	private DIDLService didlService;
@@ -325,7 +330,7 @@ public class DLNAController {
 				if (type.equals("thumb")) {
 					content = thumbs.getFile(uuid, extension, width, height);
 				} else {
-					final String path = this.storage.getPathForFile(uuid);	
+					final String path = this.systemDao.getPathForFile(uuid);	
 					if (path == null) {
 						throw new FileNotFoundException("no file for uuid " + uuid);
 					}
@@ -626,7 +631,7 @@ public class DLNAController {
 		for (final Object o : any) {
 			try {
 				if (o instanceof Browse) {
-					result = handle((Browse)o, device);
+					result = handle((Browse)o, device, getWebappLocation(request));
 					// only one item expected
 					break;
 				} else {
@@ -636,7 +641,7 @@ public class DLNAController {
 						break;
 					} else {
 						if (o instanceof Search) {
-							result = handle((Search)o, device);
+							result = handle((Search)o, device, getWebappLocation(request));
 							// only one item expected
 							break;
 						} else {
@@ -694,9 +699,9 @@ public class DLNAController {
 		return response;
 	}
 
-	private SearchResponse handle(final Search request, final DeviceByRequestHeader device) throws JAXBException, IOException {
+	private SearchResponse handle(final Search request, final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {
 		final SearchResponse response = new SearchResponse();
-		this.service.search(request, response, device);
+		this.service.search(request, response, device, wlb);
 		return response;
 	}
 
@@ -706,15 +711,15 @@ public class DLNAController {
 		return response;
 	}
 
-	private BrowseResponse handle(final Browse request, final DeviceByRequestHeader device) throws JAXBException, IOException {
+	private BrowseResponse handle(final Browse request, final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {
 		final BrowseResponse response = new BrowseResponse();
 		switch (request.getBrowseFlag()) {
 			case BROWSE_METADATA: {
-				this.service.browseMetadata(request, response, device);
+				this.service.browseMetadata(request, response, device, wlb);
 				break;
 			}
 			case BROWSE_DIRECT_CHILDREN: {
-				this.service.browseDirectChildren(request, response, device);
+				this.service.browseDirectChildren(request, response, device, wlb);
 				break;
 			}			
 		}

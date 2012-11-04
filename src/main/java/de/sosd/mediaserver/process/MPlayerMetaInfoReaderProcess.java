@@ -19,9 +19,10 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.sosd.mediaserver.dao.DidlDao;
+import de.sosd.mediaserver.dao.FilesystemDao;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
-import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.task.ProcessWatchdogService;
 
 @Configurable
@@ -36,9 +37,13 @@ public class MPlayerMetaInfoReaderProcess extends DefaultExecuteResultHandler im
 	private final ByteArrayOutputStream out;
 	private final ByteArrayOutputStream err;
 	private final File mplayer;
+
+	@Autowired
+	private FilesystemDao fsDao;
 	
 	@Autowired
-	private StorageService storage;
+	private DidlDao didlDao;
+	
 	private final String path;
 
 	private String[] arguments;
@@ -86,7 +91,7 @@ public class MPlayerMetaInfoReaderProcess extends DefaultExecuteResultHandler im
 
 	@Transactional(propagation=Propagation.SUPPORTS)
 	private void prepare() {
-		this.storage.getFile(this.fileId).getDidl();
+		this.fsDao.getFile(this.fileId).getDidl();
 //		if (didl.getPassedMPlayer() != null && !didl.getPassedMPlayer()) {
 			// maybe the file was not readable so fetch it from our server ;)
 //			int stop = (int)(didl.getSize() / 100);
@@ -105,7 +110,7 @@ public class MPlayerMetaInfoReaderProcess extends DefaultExecuteResultHandler im
 	@Transactional(propagation=Propagation.REQUIRED)
 	private void update() {
 		try {
-		final FileDomain fd = this.storage.getFile(this.fileId);
+		final FileDomain fd = this.fsDao.getFile(this.fileId);
 		final String filtered_text = this.out.toString().replace('\r', '\n');
 		
 		final String[] lines = filtered_text.split("\n");
@@ -215,7 +220,7 @@ public class MPlayerMetaInfoReaderProcess extends DefaultExecuteResultHandler im
 		dd.increaseUpdateId();
 		
 		logger.info("update meta-infos [" + fd.getId() + "]");
-		this.storage.store(fd);	
+		this.fsDao.store(fd);	
 		} finally {
 			try {
 				this.err.close();
@@ -303,10 +308,10 @@ public class MPlayerMetaInfoReaderProcess extends DefaultExecuteResultHandler im
 	@Override
 	@Transactional(propagation=Propagation.REQUIRED)
 	public void notifyProcessKilled() {
-		final FileDomain fd = this.storage.getFile(this.fileId);
+		final FileDomain fd = this.fsDao.getFile(this.fileId);
 		final DidlDomain dd = fd.getDidl();
 		dd.setPassedMPlayer(true);
-		this.storage.store(dd);	
+		this.didlDao.store(dd);	
 	}
 	
 	

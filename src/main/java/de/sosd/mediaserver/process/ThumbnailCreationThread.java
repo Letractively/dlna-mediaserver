@@ -14,8 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 import de.sosd.mediaserver.bean.StringKeyValuePair;
+import de.sosd.mediaserver.dao.DidlDao;
+import de.sosd.mediaserver.dao.SystemDao;
 import de.sosd.mediaserver.domain.db.SystemDomain;
-import de.sosd.mediaserver.service.db.StorageService;
+import de.sosd.mediaserver.service.MediaserverConfiguration;
 
 @Configurable
 public class ThumbnailCreationThread extends Thread {
@@ -23,7 +25,13 @@ public class ThumbnailCreationThread extends Thread {
 	private final static Log logger = LogFactory.getLog(ThumbnailCreationThread.class);
 	
 	@Autowired
-	private StorageService storage;
+	private SystemDao systemDao;
+	
+	@Autowired
+	private DidlDao didlDao;
+	
+	@Autowired
+	private MediaserverConfiguration cfg;
 	
 	private final SystemDomain system;
 	
@@ -35,12 +43,12 @@ public class ThumbnailCreationThread extends Thread {
 	public void run() {
 		super.run();
 		try {
-			this.storage.setThumbnailGenerationRunning(true);
+			this.systemDao.setThumbnailGenerationRunning(true, cfg.getUSN());
 			logger.info("check for missing thumbnails");
 			createThumbnailsAsync(this.system.getMplayerPath(), this.system.getPreviewCache());	
 			logger.info("thumbnails up to date");
 		} finally {
-			this.storage.setThumbnailGenerationRunning(false);
+			this.systemDao.setThumbnailGenerationRunning(false, cfg.getUSN());
 		}
 	}
 	
@@ -53,7 +61,7 @@ public class ThumbnailCreationThread extends Thread {
 				final ArrayList<ConcurrentExecute> processArray = new ArrayList<ConcurrentExecute>();
 				ConcurrentExecute ce = new ConcurrentExecute();
 				processArray.add(ce);
-				for (final StringKeyValuePair skvp : this.storage.getVideoFileIdsWithoutThumbnail()) {
+				for (final StringKeyValuePair skvp : this.didlDao.getVideoFileIdsWithoutThumbnail()) {
 					if (! fileIds.contains(skvp.getKey())) {
 						fileIds.add(skvp.getKey());					
 						if (!ce.add(mplayerFile, previewFolder, skvp)) {

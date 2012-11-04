@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.service.db;
+package de.sosd.mediaserver.dao.support;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import de.sosd.mediaserver.domain.db.ClassNameWcType;
 
 @Service
-public class StorageHelper {
+public class DidlDaoSupport {
 
-	private final static Log logger = LogFactory.getLog(StorageHelper.class);
+	private final static Log logger = LogFactory.getLog(DidlDaoSupport.class);
 	
 	private final static Map<String, String> didlFieldSortMap = new HashMap<String, String>();
 	private final static Map<String, String> didlFieldSearchMap = new HashMap<String, String>();

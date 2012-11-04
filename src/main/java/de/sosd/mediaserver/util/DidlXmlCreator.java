@@ -9,10 +9,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
+import de.sosd.mediaserver.bean.WebappLocationBean;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.ThumbnailDomain;
 import de.sosd.mediaserver.service.MediaserverConfiguration;
-import de.sosd.mediaserver.service.db.DIDLService;
+import de.sosd.mediaserver.service.dlna.DIDLService;
 
 @Configurable
 public class DidlXmlCreator {
@@ -32,8 +33,10 @@ public class DidlXmlCreator {
 	
 	@Autowired
 	private DIDLService service;
+	private final WebappLocationBean location;
 
-	public DidlXmlCreator() {
+	public DidlXmlCreator(WebappLocationBean wlb) {
+		this.location = wlb;
 		this.buffer = new StringBuffer();
 	}
 	
@@ -53,7 +56,7 @@ public class DidlXmlCreator {
 	
 	private String getHttpServerUrl() {
 		if (this.httpServerUrl == null) {
-			this.httpServerUrl = this.cfg.getHttpServerUrl();
+			this.httpServerUrl = location.getUrlString();
 		}
 		return this.httpServerUrl;
 	}

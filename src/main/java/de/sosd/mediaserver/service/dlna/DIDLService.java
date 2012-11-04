@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.service.db;
+package de.sosd.mediaserver.service.dlna;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.sosd.mediaserver.dao.DidlDao;
 import de.sosd.mediaserver.domain.db.ClassNameWcType;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
@@ -122,7 +123,7 @@ public class DIDLService {
     
     
     @Autowired
-    private StorageService storage;
+    private DidlDao dao;
     
 	public String getMimeTypeForExtension(final String extension) {
 		final String mime = extensionHttpMimeMap.get(extension.toUpperCase());
@@ -186,7 +187,7 @@ public class DIDLService {
 			touchedDidlMap.addDidl(didl.getId(), didl);
 			
 			updateParentClassType(didl, parent);
-			storage.store(didl);
+			dao.store(didl);
 			return true;
 		}
 		
@@ -244,7 +245,7 @@ public class DIDLService {
 			final DidlDomain parent = createDidlContainerTree(scanFolder.getParent(), touchedDidlMap, sfd);		
 			DidlDomain didl = new DidlDomain(id, scanFolder.getFile().getName(), scanFolder.getFile().getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_FOLDER, parent);			
 			sfd.addFolder(didl);
-			storage.store(didl);
+			dao.store(didl);
 			return touchedDidlMap.addDidl(id, didl);
 		}
 	}

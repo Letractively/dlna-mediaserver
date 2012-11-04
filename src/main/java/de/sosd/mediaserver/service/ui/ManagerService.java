@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.service;
+package de.sosd.mediaserver.service.ui;
 
 import java.io.File;
 import java.util.List;
@@ -8,17 +8,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import de.sosd.mediaserver.bean.FrontendFolderBean;
-import de.sosd.mediaserver.bean.FrontendSettingsBean;
+import de.sosd.mediaserver.bean.ui.FrontendFolderBean;
+import de.sosd.mediaserver.bean.ui.FrontendSettingsBean;
+import de.sosd.mediaserver.dao.FilesystemDao;
+import de.sosd.mediaserver.dao.SystemDao;
 import de.sosd.mediaserver.domain.db.ScanFolderDomain;
 import de.sosd.mediaserver.domain.db.SystemDomain;
-import de.sosd.mediaserver.service.db.StorageService;
+import de.sosd.mediaserver.service.FilesystemService;
+import de.sosd.mediaserver.service.MediaserverConfiguration;
 
 @Service
-public class WebInterfaceBackendService {
+public class ManagerService {
 
 	@Autowired
-	private StorageService storage;
+	private SystemDao systemDao;
+	
+	@Autowired
+	private FilesystemDao fsDao;
 	
 	@Autowired
 	private FilesystemService fs;
@@ -31,42 +37,42 @@ public class WebInterfaceBackendService {
 	}
 
 	public void removeFolderById(final String folderId) {
-		this.storage.removeDirectory(folderId);
+		this.fsDao.removeDirectory(folderId);
 	}
 
 	public List<FrontendFolderBean> loadScanFolders() {
-		return this.storage.getAllFrontendScanFolders();
+		return this.fsDao.getAllFrontendScanFolders();
 	}
 
 	public FrontendSettingsBean loadSettings() {
-		final SystemDomain sys = this.storage.getSystemProperties();
-		return new FrontendSettingsBean(sys.getName(), sys.getNetworkInterface(), this.cfg.getHttpServerUrl(), sys.getPreviewCache(), sys.getMplayerPath(), sys.getMencoderPath());
+		final SystemDomain sys = this.systemDao.getSystem(cfg.getUSN());
+		return new FrontendSettingsBean(sys.getName(), "", "", sys.getPreviewCache(), sys.getMplayerPath(), sys.getMencoderPath());
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void updateScanInterval(final String folderId, final int scanInterval) {
-		final ScanFolderDomain scfd = this.storage.getScanfolder(folderId);
+		final ScanFolderDomain scfd = this.fsDao.getScanfolder(folderId);
 		if (scfd != null) {
 			scfd.setScanInterval(scanInterval);
 		}
-		this.storage.store(scfd);
+		this.fsDao.store(scfd);
 	}
 
 	@Transactional(propagation=Propagation.REQUIRED)
 	public void updateServerSettings(final String name, final String networkInterface,
 			final String previews, final String mplayer, final String mencoder) {
-		final SystemDomain sys = this.storage.getSystemProperties();
+		final SystemDomain sys = this.systemDao.getSystem(cfg.getUSN());
 		
 		if (!name.equals(sys.getName())) {
 			sys.setName(name);
 			sys.increaseUpdateId();
 		}
-		sys.setNetworkInterface(networkInterface);
+		
 		sys.setPreviewCache(previews);
 		sys.setMplayerPath(mplayer);
 		sys.setMencoderPath(mencoder);
 		
-		this.storage.store(sys);
+		this.systemDao.store(sys);
 	}
 
 }

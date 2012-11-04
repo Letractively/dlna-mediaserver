@@ -1,6 +1,10 @@
-package de.sosd.mediaserver.controller;
+package de.sosd.mediaserver.controller.ui;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +16,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import de.sosd.mediaserver.bean.FrontendFolderBean;
-import de.sosd.mediaserver.bean.FrontendSettingsBean;
-import de.sosd.mediaserver.service.WebInterfaceBackendService;
+import de.sosd.mediaserver.bean.ui.FrontendFolderBean;
+import de.sosd.mediaserver.bean.ui.FrontendSettingsBean;
+import de.sosd.mediaserver.service.MediaserverConfiguration;
+import de.sosd.mediaserver.service.ui.ManagerService;
 
 /**
  * Handles requests for the application home page.
@@ -27,14 +32,10 @@ public class ManagerController {
 	
 	
 	@Autowired
-	private WebInterfaceBackendService backend;
+	private ManagerService backend;
 	
-//	private final static FrontendSettingsBean server = new FrontendSettingsBean("carbon", 9090, "eth3","http://192.168.101.227:/mediaserver", "", "", "");
-//	private final static List<FrontendFolderBean> folders = new ArrayList<FrontendFolderBean>();
-	
-//	static {
-//		folders.add(new FrontendFolderBean("/mnt/mldonkey/incoming"));
-//	}
+	@Autowired
+	private MediaserverConfiguration cfg;
 	
 	/**
 	 * Simply selects the home view to render by returning its name.
@@ -49,8 +50,25 @@ public class ManagerController {
 	 * Simply selects the home view to render by returning its name.
 	 */
 	@RequestMapping(value = "show", method = RequestMethod.GET)
-	public ModelAndView show() {
+	public ModelAndView show(HttpServletRequest request) {
 		logger.debug("manager");
+		boolean resolved = false;
+		try {
+			InetAddress[] allByName = InetAddress.getAllByName(request.getServerName());
+			
+			for (InetAddress ia : allByName) {
+				if (! ia.isLoopbackAddress()) {
+					cfg.updateWebappConfiguration(request.getScheme(), ia.getHostName(), request.getServerPort(), request.getContextPath());
+					resolved = true;
+					break;
+				}
+			}
+			
+		} catch (UnknownHostException e) {
+		}
+		if (! resolved) {
+			cfg.updateWebappConfiguration(request.getScheme(), request.getServerName(), request.getServerPort(), request.getContextPath());
+		}
 		return buildManagerModelAndView();
 	}
 	
@@ -72,6 +90,8 @@ public class ManagerController {
 			@RequestParam("networkInterface") final String networkInterface,
 			@RequestParam("previews") final String previews
 	) {
+
+		
 		logger.debug("updateServerSettings");
 		
 		this.backend.updateServerSettings(name,networkInterface, previews, mplayer, mencoder);

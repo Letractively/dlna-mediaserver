@@ -24,18 +24,18 @@
 		resource-ref="true" />
 	<jee:jndi-lookup id="hibernateDialect"
 		jndi-name="java:comp/env/mediaserver.database.dialect" resource-ref="true" />
-	<jee:jndi-lookup id="cfgWebappName"
-		jndi-name="java:comp/env/mediaserver.webapp.name" resource-ref="true" />
-	<jee:jndi-lookup id="cfgServerHostname"
-		jndi-name="java:comp/env/mediaserver.server.hostname" resource-ref="true" />
-	<jee:jndi-lookup id="cfgServerPort"
-		jndi-name="java:comp/env/mediaserver.server.port" resource-ref="true" />
+<!-- 	<jee:jndi-lookup id="cfgWebappName" -->
+<!-- 		jndi-name="java:comp/env/mediaserver.webapp.name" resource-ref="true" /> -->
+<!-- 	<jee:jndi-lookup id="cfgServerHostname" -->
+<!-- 		jndi-name="java:comp/env/mediaserver.server.hostname" resource-ref="true" /> -->
+<!-- 	<jee:jndi-lookup id="cfgServerPort" -->
+<!-- 		jndi-name="java:comp/env/mediaserver.server.port" resource-ref="true" /> -->
 
-	<bean class="de.sosd.mediaserver.service.MediaserverConfiguration" id="mediaserverConfiguration" name="MediaserverConfiguration">
-		<property name="hostname" ref="cfgServerHostname"/>
-		<property name="port" ref="cfgServerPort"/>
-		<property name="webappName" ref="cfgWebappName"/>
-	</bean>
+<!-- 	<bean class="de.sosd.mediaserver.service.MediaserverConfiguration" id="mediaserverConfiguration" name="MediaserverConfiguration"> -->
+<!-- 		<property name="hostname" ref="cfgServerHostname"/> -->
+<!-- 		<property name="port" ref="cfgServerPort"/> -->
+<!-- 		<property name="webappName" ref="cfgWebappName"/> -->
+<!-- 	</bean> -->
 
 	<bean class="org.springframework.orm.jpa.JpaTransactionManager"
 		id="transactionManager">
@@ -44,9 +44,6 @@
 
 	<tx:annotation-driven mode="aspectj"
 		transaction-manager="transactionManager" />
-
-<!-- 	<context:property-placeholder -->
-<!-- 		system-properties-mode="OVERRIDE" /> -->
 
 	<bean
 		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
@@ -64,48 +61,9 @@
 				<entry key="hibernate.connection.release_mode" value="after_transaction" />
 			</map>
 		</property>
-		<!-- <property name="jpaProperties"> -->
-
-		<!-- <props> -->
-		<!-- <prop key="hibernate.dialect" ><ref bean="hibernateDialect"/></prop> -->
-
-
-	<!-- 
-		 <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/> 
-		
-		 <prop key="hibernate.dialect" >org.hibernate.dialect.MySQLInnoDBDialect</prop> 
-		
-		 <prop key="hibernate.connection.driver_class" >com.mysql.jdbc.Driver</prop> 
-		
-		 <prop key="hibernate.connection.url" >jdbc:mysql://localhost:3306/zzzzzzz</prop> 
-		
-		 <prop key="hibernate.connection.username" >root</prop> 
-		
-		 <prop key="hibernate.connection.password" >*******</prop> 
-		
-		 <prop key="hibernate.cache.provider_class" >org.hibernate.cache.NoCacheProvider</prop> 
-		
-		 <prop key="hibernate.c3p0.min_size" >5</prop> 
-		
-		 <prop key="hibernate.c3p0.max_size" >20</prop> 
-		
-		 <prop key="hibernate.c3p0.timeout" >600</prop> 
-		
-		 <prop key="hibernate.c3p0.max_statements" >50</prop> 
-		
-		 <prop key="hibernate.show_sql" >false</prop> 
-		
-		 <prop key="hibernate.format_sql" >true</prop> 
-		
-		 <prop key="hibernate.hbm2ddl.auto" >update</prop> 
-		-->
-
-
-		<!-- </props> -->
-		<!-- </property> -->
 	</bean>
 
-	
+	<context:component-scan base-package="de.sosd.mediaserver.dao" />
 	<context:component-scan base-package="de.sosd.mediaserver.service" />
 	<context:component-scan base-package="de.sosd.mediaserver.process" />	
 	<context:component-scan base-package="de.sosd.mediaserver.task" />

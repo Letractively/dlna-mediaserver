@@ -15,6 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -54,12 +55,17 @@ public class ScanFolderDomain implements Serializable {
 	@Column(name = "scan_state", nullable = false)
 	private ScanFolderState scanState = ScanFolderState.IDLE;
 	@OneToOne(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, optional=true)
-	private DidlDomain didl;
+	@JoinColumn(name = "didl_root")
+	private DidlDomain didlRoot;
 	@OneToMany(targetEntity = FileDomain.class, fetch = FetchType.LAZY, mappedBy = "parent", cascade = CascadeType.ALL)
 	private List<FileDomain> files = new ArrayList<FileDomain>(5);
 	@ManyToOne(targetEntity=SystemDomain.class, fetch = FetchType.LAZY, optional = false)
 	private SystemDomain system;
 
+
+	@OneToMany(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "folder")
+	private final List<DidlDomain> didl = new ArrayList<DidlDomain>();
+	
 	// some stats
 	@Column(name = "folder_count", nullable = false)
 	private int folderCount;
@@ -121,16 +127,20 @@ public class ScanFolderDomain implements Serializable {
 		this.scanInterval = scanInterval;
 	}
 
-	public DidlDomain getDidl() {
-		return this.didl;
+	public DidlDomain getDidlRoot() {
+		return this.didlRoot;
 	}
 
-	public void setDidl(final DidlDomain didl) {
-		this.didl = didl;
+	public void setDidlRoot(final DidlDomain didl) {
+		this.didlRoot = didl;
 		didl.setFolder(this);
 		addFolder(didl);
 	}
 
+	public List<DidlDomain> getDidl() {
+		return didl;
+	}
+	
 	public List<FileDomain> getFiles() {
 		return this.files;
 	}
@@ -268,7 +278,7 @@ public class ScanFolderDomain implements Serializable {
 				+ scanInterval
 				+ ", "
 				+ (scanState != null ? "scanState=" + scanState + ", " : "")
-				+ (didl != null ? "didl=" + didl + ", " : "")
+				+ (didlRoot != null ? "didl=" + didlRoot + ", " : "")
 				+ (files != null ? "files="
 						+ files.subList(0, Math.min(files.size(), maxLen))
 						+ ", " : "")

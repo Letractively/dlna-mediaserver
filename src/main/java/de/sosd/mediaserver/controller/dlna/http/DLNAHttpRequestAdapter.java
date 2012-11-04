@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.controller.http;
+package de.sosd.mediaserver.controller.dlna.http;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

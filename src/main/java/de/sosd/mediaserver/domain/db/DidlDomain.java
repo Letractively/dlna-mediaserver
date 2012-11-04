@@ -28,7 +28,7 @@ import javax.persistence.Transient;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.hibernate.annotations.Index;
 
-import de.sosd.mediaserver.service.db.ThumbnailPurger;
+import de.sosd.mediaserver.dao.support.ThumbnailPurger;
 import de.sosd.mediaserver.util.DidlXmlCreator;
 
 
@@ -143,7 +143,7 @@ public class DidlDomain implements Serializable {
  	private Integer containerContentSize;
  	@OneToOne(optional=true, targetEntity=FileDomain.class,fetch=FetchType.LAZY)
  	private FileDomain file;
-	@OneToOne(optional=true, targetEntity=ScanFolderDomain.class,fetch=FetchType.LAZY, mappedBy="didl")
+	@ManyToOne(optional=true, targetEntity=ScanFolderDomain.class,fetch=FetchType.LAZY)
  	private ScanFolderDomain folder;
 	@OneToOne(optional=true, targetEntity=SystemDomain.class,fetch=FetchType.LAZY, mappedBy="didlRoot")
  	private SystemDomain system;
@@ -156,14 +156,14 @@ public class DidlDomain implements Serializable {
 	/*********** DIDL-OPTIONS **************/
 	@Column(name="searchable")
 	private Boolean searchable = true;
-	@Column(name="mplayer_pass")
-	private Boolean passedMPlayer;
+	@Column(name="mplayer_pass", nullable = false)
+	private boolean passedMPlayer = false;
 	@Column(name="seekable")
 	private Boolean seekable = true;
-	@Column(name="thumb_generate")
-	private Boolean generateThumbnail = true;	
+	@Column(name="thumb_generate", nullable = false)
+	private boolean generateThumbnail = true;	
 	@Column(name="online")
-	private Boolean online = true;	
+	private boolean online = true;	
 	
 	public DidlDomain() {
 		super();
@@ -181,13 +181,16 @@ public class DidlDomain implements Serializable {
 
 	public DidlDomain(final ScanFolderDomain folder, DidlDomain parent) {
 		this(folder.getId(), folder.getName(), folder.getPath(), ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME, parent);
-		folder.setDidl(this);
+		folder.setDidlRoot(this);
+		this.folder = folder;
+		this.folder.getDidl().add(this);
 	}
 
 	public DidlDomain(final SystemDomain system) {
-		this(system.getHostname(),"/", "root",ClassNameWcType.OBJECT_CONTAINER_STORAGE_SYSTEM,null);
-		setPath(system.getHostname() + ":");
+		this(system.getUsn(),"/", "root",ClassNameWcType.OBJECT_CONTAINER_STORAGE_SYSTEM,null);
+		setPath(system.getUsn() + ":");
 		system.setDidlRoot(this);
+		
 		system.addFolder(
 				new DidlDomain(UUID.randomUUID().toString(), "Filesystem", "The Filesystem", ClassNameWcType.OBJECT_CONTAINER_STORAGE_VOLUME, this)
 		);		
@@ -204,7 +207,10 @@ public class DidlDomain implements Serializable {
 		if (parent != null) {
 			setParent(parent);
 			getParent().addChild(this);
-			
+			this.folder = parent.getFolder();
+			if (this.folder != null) {
+				this.folder.getDidl().add(this);
+			}
 			setPath(getParent().getPath() + "/" + getTitle());
 		}
 	}
@@ -581,6 +587,14 @@ public class DidlDomain implements Serializable {
 		this.searchable = searchable;
 	}
 
+	public boolean isOnline() {
+		return online;
+	}
+	
+	public void setOnline(boolean online) {
+		this.online = online;
+	}
+	
 	/**
 	 * @return the containerContent
 	 */
@@ -689,11 +703,11 @@ public class DidlDomain implements Serializable {
 		return this.references;
 	}
 	
-	public void setPassedMPlayer(final Boolean passedMPlayer) {
+	public void setPassedMPlayer(final boolean passedMPlayer) {
 		this.passedMPlayer = passedMPlayer;
 	}
 	
-	public Boolean getPassedMPlayer() {
+	public boolean isPassedMPlayer() {
 		return this.passedMPlayer;
 	}
 	
@@ -770,41 +784,12 @@ public class DidlDomain implements Serializable {
 		this.seekable = seekable;
 	}
 	
-	public Boolean getGenerateThumbnail() {
+	public boolean isGenerateThumbnail() {
 		return this.generateThumbnail;
 	}
 	
-	public void setGenerateThumbnail(final Boolean generateThumbnail) {
+	public void setGenerateThumbnail(final boolean generateThumbnail) {
 		this.generateThumbnail = generateThumbnail;
-	}
-	
-	public void setOnline(Boolean online) {
-		this.online = online;
-	}
-	
-	public Boolean getOnline() {
-		return online;
-	}
-	
-	public boolean isOnline() {
-		return getOnline() == null || getOnline().booleanValue();
-	}
-	
-	public void goOnline(boolean value) {
-		// check ourselfs
-		if (isOnline() != value) {
-			// update ourselfs
-			setOnline(value);
-			increaseUpdateId();
-			// check all children
-			for (DidlDomain dd : getContainerContent()) {
-				dd.goOnline(value);
-			}
-			// check all references
-			for (DidlDomain dd : getReferences()) {
-				dd.goOnline(value);
-			}
-		}
 	}
 	
 	/*

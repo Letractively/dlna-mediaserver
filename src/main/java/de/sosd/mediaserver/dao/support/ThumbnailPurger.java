@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.service.db;
+package de.sosd.mediaserver.dao.support;
 
 import java.io.File;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.controller;
+package de.sosd.mediaserver.controller.ui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,4 +1,4 @@
-package de.sosd.mediaserver.bean;
+package de.sosd.mediaserver.bean.ui;
 
 import java.text.DecimalFormat;
 import java.util.Date;

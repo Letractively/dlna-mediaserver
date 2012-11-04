@@ -19,10 +19,11 @@ import org.upnp.schemas.service.contentdirectory._1.GetSortCapabilitiesResponse;
 import org.upnp.schemas.service.contentdirectory._1.Search;
 import org.upnp.schemas.service.contentdirectory._1.SearchResponse;
 
-import de.sosd.mediaserver.domain.db.SystemDomain;
+import de.sosd.mediaserver.bean.WebappLocationBean;
+import de.sosd.mediaserver.dao.DidlDao;
+import de.sosd.mediaserver.dao.SystemDao;
+import de.sosd.mediaserver.dao.support.DidlDaoSupport;
 import de.sosd.mediaserver.service.MediaserverConfiguration;
-import de.sosd.mediaserver.service.db.StorageHelper;
-import de.sosd.mediaserver.service.db.StorageService;
 import de.sosd.mediaserver.util.DeviceByRequestHeader;
 import de.sosd.mediaserver.util.DidlXmlCreator;
 
@@ -46,35 +47,38 @@ public class ContentDirectoryService {
 	
 	
 	@Autowired
-	private StorageService storage;
+	private DidlDao didlDao;
 	
 	@Autowired
-	private StorageHelper helper;
+	private SystemDao systemDao;
+	
+	@Autowired
+	private DidlDaoSupport helper;
 	
 	@Autowired
 	private MediaserverConfiguration cfg;
 	
 	public int getSystemUpdateId() {
-		SystemDomain stats = this.storage.getSystemProperties();
-		
-		if (stats == null) {
-			stats = this.storage.initSystem();
-		}
-		logger.info("GetSystemUpdateId -> " + stats.getUpdateId());
-		return stats.getUpdateId();
+		return systemDao.getSystemUpdateId(cfg.getUSN());
 	}
 
-	public void browseMetadata(final Browse request, final BrowseResponse response, final DeviceByRequestHeader device) throws JAXBException, IOException {
+	public void browseMetadata(final Browse request, final BrowseResponse response, final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {
 		final String objectId = getLocalObjectId(request.getObjectID());
 		final String filter = this.helper.translateFilter( request.getFilter());
 		final String sort = this.helper.translateSortCriteria( request.getSortCriteria() );		
-		final DidlXmlCreator didlLite = this.storage.getInfoById(
+		
+		final Integer requestedCount = request.getRequestedCount();
+		int fetchSize = Integer.MAX_VALUE;
+		if (requestedCount != null && requestedCount.intValue() > 0) {
+			fetchSize = requestedCount.intValue();
+		}
+		final DidlXmlCreator didlLite = this.didlDao.getInfoById(
 				objectId, 
 				request.getStartingIndex(), 
-				request.getRequestedCount(),
+				fetchSize,
 				filter,
-				sort			
-				);
+				sort,			
+				wlb);
 		String responseText = createResponse(response, didlLite);
 //		System.out.println("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
 //		System.out.println(responseText);		
@@ -84,7 +88,7 @@ public class ContentDirectoryService {
 
 	private String getLocalObjectId(final String objectID) {
 		if (objectID.equals("0")) {
-			return this.cfg.getHostname();
+			return this.cfg.getUSN();
 		}
 		return objectID;
 	}
@@ -116,17 +120,23 @@ public class ContentDirectoryService {
 //		return result;
 //	}
 
-	public void browseDirectChildren(final Browse request,	final BrowseResponse response, final DeviceByRequestHeader device) throws JAXBException, IOException {	
+	public void browseDirectChildren(final Browse request,	final BrowseResponse response, final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {	
 		final String objectId = getLocalObjectId(request.getObjectID());
 		final String filter = this.helper.translateFilter( request.getFilter());
-		final String sort = this.helper.translateSortCriteria( request.getSortCriteria() );		
-		final DidlXmlCreator didl = this.storage.getContainerContentById(
+		final String sort = this.helper.translateSortCriteria( request.getSortCriteria() );
+		
+		final Integer requestedCount = request.getRequestedCount();
+		int fetchSize = Integer.MAX_VALUE;
+		if (requestedCount != null && requestedCount.intValue() > 0) {
+			fetchSize = requestedCount.intValue();
+		}
+		final DidlXmlCreator didl = this.didlDao.getContainerContentById(
 					objectId, 
 					request.getStartingIndex(), 
-					request.getRequestedCount(),
+					fetchSize,
 					filter,
-					sort
-					);
+					sort,
+					wlb);
 		
 		
 		String responseText = createResponse(response, didl);
@@ -136,7 +146,7 @@ public class ContentDirectoryService {
 	}
 
 	public void search(final Search request, final SearchResponse response,
-			final DeviceByRequestHeader device) throws JAXBException, IOException {
+			final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {
 		logger.info("Search ["+request.getContainerID()+","+request.getStartingIndex()+","+request.getRequestedCount()+","+request.getSearchCriteria()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	
 
 		final String objectId = getLocalObjectId(request.getContainerID());
@@ -146,14 +156,21 @@ public class ContentDirectoryService {
 		final ArrayList<Object> searchParameters = new ArrayList<Object>();
 		final String where = this.helper.translateSearchCriteria(request.getSearchCriteria(), searchParameters);
 		
+		final Integer requestedCount = request.getRequestedCount();
+		int fetchSize = Integer.MAX_VALUE;
+		if (requestedCount != null && requestedCount.intValue() > 0) {
+			fetchSize = requestedCount.intValue();
+		}
+		
 //		if (request.getContainerId().equals("0")) {
-		final DidlXmlCreator didl = this.storage.getSearchItems(objectId,
+		final DidlXmlCreator didl = this.didlDao.getSearchItems(objectId,
 					where,
 					searchParameters,
 					request.getStartingIndex(), 
-					request.getRequestedCount(),
+					fetchSize,
 					filter,
-					sort
+					sort,
+					wlb
 				);		
 //		
 //		

@@ -16,13 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import de.sosd.mediaserver.dao.DidlDao;
+import de.sosd.mediaserver.dao.FilesystemDao;
+import de.sosd.mediaserver.dao.SystemDao;
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.FileDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderDomain;
 import de.sosd.mediaserver.domain.db.ScanFolderState;
 import de.sosd.mediaserver.domain.db.SystemDomain;
-import de.sosd.mediaserver.service.db.DIDLService;
-import de.sosd.mediaserver.service.db.StorageService;
+import de.sosd.mediaserver.service.dlna.DIDLService;
 import de.sosd.mediaserver.util.DidlChangeMap;
 import de.sosd.mediaserver.util.ScanContext;
 import de.sosd.mediaserver.util.ScanFile;
@@ -34,13 +36,22 @@ public class FilesystemService {
 	private final static Log logger = LogFactory.getLog(FilesystemService.class);
 	
 	@Autowired
-	private StorageService storage;
+	private FilesystemDao fsDao;
+	
+	@Autowired
+	private SystemDao systemDao;
+	
+	@Autowired
+	private DidlDao didlDao;
 	
 	@Autowired
 	private IdService idservice;
 	
 	@Autowired
 	private DIDLService didl;
+	
+	@Autowired
+	private MediaserverConfiguration cfg;
 	
 	public boolean addScanDirectory(final File directory) {
 		try {
@@ -56,14 +67,14 @@ public class FilesystemService {
 	public void addScanDirectoryTransactional(final File directory) {
 		if (directory.isDirectory()) {
 			final String id = this.idservice.getId(directory);
-			if (!this.storage.isDirectoryPresent(id)) {
+			if (!this.fsDao.isDirectoryPresent(id)) {
 				final ScanFolderDomain scanFolder = new ScanFolderDomain(id, directory, null);
 				
-				final SystemDomain system = this.storage.getSystemProperties();
+				final SystemDomain system = this.systemDao.getSystem(cfg.getUSN());
 				system.getScanFolder().add(scanFolder);
 				scanFolder.setSystem(system);
-				scanFolder.setDidl(this.didl.createDidlContainer(scanFolder, system.getDidlRoot()));
-				this.storage.store(system);
+				scanFolder.setDidlRoot(this.didl.createDidlContainer(scanFolder, system.getDidlRoot()));
+				this.systemDao.store(system);
 				logger.info("added new scan-directory : " + scanFolder.getPath());
 			}
 		}
@@ -80,7 +91,7 @@ public class FilesystemService {
 	private List<ScanContext> createScanContexts() {
 		final List<ScanContext> scanContexts = new ArrayList<ScanContext>();
 		final long currentTimeMillis = System.currentTimeMillis();
-		final SystemDomain system = this.storage.getSystemProperties();
+		final SystemDomain system = this.systemDao.getSystem(cfg.getUSN());
 		for (final ScanFolderDomain sfd : system.getScanFolder()) {
 			if (
 			!ScanFolderState.SCANNING.equals(sfd.getScanState()) &&
@@ -93,11 +104,11 @@ public class FilesystemService {
 				if (! dir.exists() || ! dir.isDirectory()) {
 					// this could happen with external storage ..
 					sfd.setScanState(ScanFolderState.NOT_FOUND);
-					sfd.getDidl().goOnline(false);
+					didlDao.setOnline(sfd.getId(), false);
 					system.increaseUpdateId();
 				} else {
 					if (ScanFolderState.NOT_FOUND.equals(sfd.getScanState())) {
-						sfd.getDidl().goOnline(true);
+						didlDao.setOnline(sfd.getId(), true);
 						system.increaseUpdateId();
 					}
 					
@@ -106,7 +117,7 @@ public class FilesystemService {
 				}
 			}
 		}		
-		this.storage.store(system);
+		this.systemDao.store(system);
 		
 		return scanContexts;
 	}
@@ -116,7 +127,7 @@ public class FilesystemService {
 		long changedCount = 0l;
 		boolean systemChanged = false;
 		
-		final SystemDomain 				system 				= this.storage.getSystemProperties();
+		final SystemDomain 				system 				= this.systemDao.getSystem(cfg.getUSN());
 		final Set<Object> 				itemsToPurge 		= new HashSet<Object>();	
 		final Map<String, ScanContext> 	idScanContextMap 	= new HashMap<String, ScanContext>();		
 		final Set<String> 				foundFileIds  					= new HashSet<String>();
@@ -129,7 +140,7 @@ public class FilesystemService {
 		// collect all Files, no Folders!
 		for (final ScanContext sc : scanContexts) {
 			logger.info("scanner [scan] "+sc.getScanFolder());
-			List<String> knownFileIds = this.storage.getAllFileIds(sc.getScanFolderId());
+			List<String> knownFileIds = this.fsDao.getAllFileIds(sc.getScanFolderId());
 			collectNewFiles(sc.getScanFolder(), sc.getFiles(), knownFileIds, foundFileIds);
 			logger.info("scanner [found files] " + sc.getFiles().size() + " " +sc.getScanFolder());
 			
@@ -144,7 +155,7 @@ public class FilesystemService {
 		}	
 		
 		if (changedCount > 0) {
-			final List<String> allDidlIds= this.storage.getAllDidlIds();	
+			final List<String> allDidlIds= this.didlDao.getAllDidlIds();	
 			for (String id : allDidlIds) {
 				touchedDidlMap.addDidl(id, null);
 			}
@@ -173,7 +184,7 @@ public class FilesystemService {
 					logger.info("scanner [add file] " + fd.getName() + "\t\t(" + fd.getPath() + ")");
 				}				
 				if (changedFiles || !sc.getDeletedMediaFiles().isEmpty()) {
-					changedFiles |= updateDidl(sfd.getDidl(), sfd, touchedDidlMap,sc.getDeletedMediaFiles(), itemsToPurge);
+					changedFiles |= updateDidl(sfd.getDidlRoot(), sfd, touchedDidlMap,sc.getDeletedMediaFiles(), itemsToPurge);
 				}
 				// remove scanfolder mark
 				sfd.setScanState(ScanFolderState.IDLE);
@@ -194,7 +205,7 @@ public class FilesystemService {
 			}
 		}		
 		logger.info("scanner [update database]");
-		this.storage.update(system, new ArrayList<Object>(itemsToPurge));
+		this.systemDao.update(system, new ArrayList<Object>(itemsToPurge));
 		logger.info("scanner [done]");
 		
 	}
@@ -224,7 +235,7 @@ public class FilesystemService {
 			// remove child
 			final FileDomain file = item.getFile();
 			changed = parent.removeChild(item);			
-			storage.store(parent);
+			didlDao.store(parent);
 //			item.setFile(null);
 //			item.setParent(null);
 //			item.setReference(null);

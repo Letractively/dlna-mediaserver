@@ -2,7 +2,7 @@ package de.sosd.mediaserver;
 
 import java.util.ArrayList;
 
-import de.sosd.mediaserver.service.db.StorageHelper;
+import de.sosd.mediaserver.dao.support.DidlDaoSupport;
 
 public class TestSearchTranslation {
 
@@ -18,7 +18,7 @@ public class TestSearchTranslation {
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		
-		StorageHelper sh = new StorageHelper();
+		DidlDaoSupport sh = new DidlDaoSupport();
 		for (int i = 0; i < data.length; ++i) {
 			String [] test = data[i];
 			

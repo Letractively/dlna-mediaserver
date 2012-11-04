@@ -3,13 +3,10 @@ package de.sosd.mediaserver.service.dlna;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -18,8 +15,10 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.sosd.mediaserver.controller.DLNAController;
+import de.sosd.mediaserver.bean.NetworkDeviceBean;
+import de.sosd.mediaserver.controller.dlna.DLNAController;
 import de.sosd.mediaserver.service.MediaserverConfiguration;
+import de.sosd.mediaserver.service.NetworkDeviceService;
 
 @Service
 public class UPNPNetwork {
@@ -43,6 +42,10 @@ public class UPNPNetwork {
 
 	@Autowired
 	private MediaserverConfiguration cfg;
+	
+	@Autowired
+	private NetworkDeviceService network;
+	
 	private InetAddress upnpGroup;
 
 	private boolean offline = false;
@@ -53,73 +56,8 @@ public class UPNPNetwork {
 		return getNewMulticastSocket(0);
 	}
 
-	private MulticastSocket getNewMulticastSocket(final int port) throws IOException {	
-		return getNewMulticastSocket(findAddress(), port);
-	}
-
-	private InetAddress findAddress() throws IOException {
-		Enumeration<NetworkInterface> ifaces = NetworkInterface
-				.getNetworkInterfaces();
-
-		while (ifaces.hasMoreElements()) {
-			final NetworkInterface iface = ifaces.nextElement();
-			if (iface.getName().equalsIgnoreCase(this.cfg.getNetworkInterface())) {
-
-				final Enumeration<InetAddress> addressList = iface.getInetAddresses();
-				while (addressList.hasMoreElements()) {
-					final InetAddress address = addressList.nextElement();
-					if (!(address instanceof Inet6Address)) {
-						logger.trace("use ipv4 (" + address
-								+ ") on interface: " + iface.getName());
-						
-						return address;
-
-					} else {
-						logger.trace("ignore ipv6 (" + address
-								+ ") on interface: " + iface.getName());
-					}
-				}
-				logger.trace("found not usable addresses on interface: "
-						+ iface.getName());
-			} else {
-				logger.trace("ignore interface : " + iface.getName() + "!");
-			}
-		}
-		ifaces = NetworkInterface.getNetworkInterfaces();
-		// configured one does not work! try any working ipv4 iface
-		while (ifaces.hasMoreElements()) {
-			final NetworkInterface iface = ifaces.nextElement();
-			if (iface.getName().toLowerCase().startsWith("eth")) {
-				final Enumeration<InetAddress> addressList = iface.getInetAddresses();
-				while (addressList.hasMoreElements()) {
-					final InetAddress address = addressList.nextElement();
-					if (!(address instanceof Inet6Address)) {
-						logger.trace("use ipv4 (" + address + ") on interface: "
-								+ iface.getName());
-						final String hostAddress = address.getHostAddress();
-						final String hostName = address.getHostName();
-						final String interfaceName = iface.getName();
-						this.cfg.setNetworkProperties(interfaceName, hostAddress, hostName);
-						return address;
-	
-					} else {
-						logger.trace("ignore ipv6 (" + address + ") on interface: "
-								+ iface.getName());
-					}
-				}
-				logger.trace("found not usable addresses on interface: "
-						+ iface.getName());
-			}
-
-		}
-
-		throw new IOException(
-				"Network not configured. Please set network-interface! Currently this is : " + this.cfg.getNetworkInterface());		
-	}
-	
-	private MulticastSocket getNewMulticastSocket(final InetAddress address, final int port)
+	private MulticastSocket getNewMulticastSocket(final int port)
 			throws IOException {
-		logger.trace("open multicast socket on addresse: " + address);
 		MulticastSocket ssdpSocket;
 		if (port == 0) {
 			ssdpSocket = new MulticastSocket();
@@ -127,11 +65,11 @@ public class UPNPNetwork {
 			ssdpSocket = new MulticastSocket(port);
 		}
 		ssdpSocket.setReuseAddress(true);
-		ssdpSocket.setInterface(address);
-		logger.trace("Sending message from multicast socket on network interface: "
-				+ ssdpSocket.getNetworkInterface());
-		logger.trace("Multicast socket is on interface: "
-				+ ssdpSocket.getInterface());
+//		ssdpSocket.setInterface(address);
+//		logger.trace("Sending message from multicast socket on network interface: "
+//				+ ssdpSocket.getNetworkInterface());
+//		logger.trace("Multicast socket is on interface: "
+//				+ ssdpSocket.getInterface());
 		ssdpSocket.setTimeToLive(32);
 		// ssdpSocket.setLoopbackMode(true);
 		this.upnpGroup = InetAddress.getByAddress(UPNP_HOST, UPNP_HOST_ADDRESS);
@@ -139,7 +77,6 @@ public class UPNPNetwork {
 		logger.trace("Socket Timeout: " + ssdpSocket.getSoTimeout());
 		logger.trace("Socket TTL: " + ssdpSocket.getTimeToLive());
 
-//		updateUSN(address);
 		return ssdpSocket;
 	}
 
@@ -147,17 +84,6 @@ public class UPNPNetwork {
 		return getNewMulticastSocket(UPNP_PORT);
 	}
 
-//	public void updateUSN(InetAddress address) {
-//		try {
-//			NetworkInterface nic = NetworkInterface.getByInetAddress(address);
-//			UUID uuid = UUID.nameUUIDFromBytes(nic.getHardwareAddress());
-//
-//			cfg.setUSN(uuid.toString());
-//		} catch (SocketException e) {
-//
-//		}
-//	}
-	
 
 //	NOTIFY * HTTP/1.1
 //
@@ -186,30 +112,35 @@ public class UPNPNetwork {
 	}		
 	
 	private void sendStatus(final String state) {
-		MulticastSocket ssdpSocket = null;
-		try {
-			logger.trace("create alive-socket");
-			ssdpSocket = getNewMulticastSocket();
-//			sendMessage(ssdpSocket, buildDiscoverMsg(URN_SCHEMAS_MEDIA_SERVER));
-//			sendMessage(ssdpSocket, buildMsg(UPNP_ROOTDEVICE, ALIVE, true));
-//			sendMessage(ssdpSocket, buildMsg(null, ALIVE, true));
-			sendMessage(ssdpSocket,
-					buildNotifyMsg(URN_SCHEMAS_MEDIA_SERVER, state));
-//			sendMessage(ssdpSocket,
-//					buildMsg(URN_SCHEMAS_CONTENT_DIRECTORY, ALIVE, true));
-//			sendMessage(ssdpSocket,
-//					buildMsg(URN_SCHEMAS_CONNECTION_MANAGER, ALIVE, true));
-//			sendMessage(ssdpSocket, buildMsg( URN_X_MS_MEDIA_RECEIVER_REGISTRAR_1,  ALIVE,true));
-
-			//ssdpSocket.leaveGroup(upnpGroup);
-		} catch (final IOException e) {
-			logger.error("io-error while sending " + state);
-		} finally {
-			if (ssdpSocket != null) {
-				logger.trace("close alive-socket");
-				ssdpSocket.close();
+		
+		
+			MulticastSocket ssdpSocket = null;
+			try {
+				logger.trace("create alive-socket");
+				ssdpSocket = getNewMulticastSocket();
+				for (NetworkDeviceBean ndb : network.getActiveDevices()) {
+	
+		//			sendMessage(ssdpSocket, buildDiscoverMsg(URN_SCHEMAS_MEDIA_SERVER));
+		//			sendMessage(ssdpSocket, buildMsg(UPNP_ROOTDEVICE, ALIVE, true));
+		//			sendMessage(ssdpSocket, buildMsg(null, ALIVE, true));
+					sendMessage(ssdpSocket, buildNotifyMsg(ndb.getIpAddress(),URN_SCHEMAS_MEDIA_SERVER, state));
+		//			sendMessage(ssdpSocket,
+		//					buildMsg(URN_SCHEMAS_CONTENT_DIRECTORY, ALIVE, true));
+		//			sendMessage(ssdpSocket,
+		//					buildMsg(URN_SCHEMAS_CONNECTION_MANAGER, ALIVE, true));
+		//			sendMessage(ssdpSocket, buildMsg( URN_X_MS_MEDIA_RECEIVER_REGISTRAR_1,  ALIVE,true));
+		
+					//ssdpSocket.leaveGroup(upnpGroup);
+				}
+			} catch (final IOException e) {
+				logger.error("io-error while sending " + state);
+			} finally {
+				if (ssdpSocket != null) {
+					logger.trace("close alive-socket");
+					ssdpSocket.close();
+				}
 			}
-		}
+		
 	}
 
 	public void sendAlive() throws IOException {
@@ -218,10 +149,6 @@ public class UPNPNetwork {
 			sendStatus(ALIVE);
 		}
 	}
-
-//	private void sendDiscover(String host, int port) throws IOException {
-//		sendDiscover(host, port, null);
-//	}
 
 	/**
 	 
@@ -250,14 +177,6 @@ public class UPNPNetwork {
 	Ext:
 	
 	 **/	
-//	private void sendDiscover(String host, int port, String nt)
-//			throws IOException {
-//		
-//
-//
-//		sendReply(host, port, buildDiscoverMsg(nt));
-//	}
-
 
 
 	private void sendReply(final InetAddress remoteAddress, final int port, final String msg)
@@ -289,7 +208,7 @@ public class UPNPNetwork {
 		logger.trace("send message ["+this.upnpGroup + ":" + UPNP_PORT +"] -> " + msg);
 	}
 
-	private String buildNotifyMsg(String nt, final String message) {
+	private String buildNotifyMsg(String address, String nt, final String message) {
 		final StringBuffer sb = new StringBuffer();
 
 		sb.append("NOTIFY * HTTP/1.1");
@@ -306,7 +225,7 @@ public class UPNPNetwork {
 		sb.append(CRLF);
 		sb.append("NTS: " + message);
 		sb.append(CRLF);
-		sb.append("Location: " + this.cfg.getHttpServerUrl() + DLNAController.getDescriptionRef());
+		sb.append("Location: " + this.cfg.getWebappLocation(address).getUrlString() + DLNAController.getDescriptionRef());
 		sb.append(CRLF);		
 		sb.append("USN: " + usn);
 		sb.append(CRLF);
@@ -318,7 +237,7 @@ public class UPNPNetwork {
 		return sb.toString();
 	}
 	
-	private String buildDiscoverMsg(final String st) {
+	private String buildDiscoverMsg(String address, final String st) {
 		
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		final StringBuffer sb = new StringBuffer();
@@ -340,7 +259,7 @@ public class UPNPNetwork {
 		sb.append(usn);
 		sb.append(st);
 		sb.append(CRLF);
-		sb.append("Location:" + this.cfg.getHttpServerUrl()	+ DLNAController.getDescriptionRef());
+		sb.append("Location:" + this.cfg.getWebappLocation(address).getUrlString() + DLNAController.getDescriptionRef());
 		sb.append(CRLF);		
 		sb.append("Cache-Control:max-age=1200");
 		sb.append(CRLF);
@@ -372,24 +291,9 @@ public class UPNPNetwork {
 						if (this.listener == null) {
 							this.listener = getNewMulticastListenSocket();
 						}
-//						Socket socket = listener.accept();
-//						BufferedInputStream in = new BufferedInputStream( socket.getInputStream() );
-//						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//						int read = 0;
-//						do {
-//							read = in.read(buffer);
-//							
-//							if (read > 0) {
-//								baos.write(buffer, 0, read);
-//							}
-//						} while (read > 0); 
-//						
-//						int remotePort = socket.getPort();
-//						InetAddress remoteIp = socket.getInetAddress();
-//						socket.close();
-//						
-//						String data = new String(baos.toByteArray());
+
 						final DatagramPacket data = new DatagramPacket(new byte[4096], 4096);
+						
 						this.listener.receive(data);
 						final String text = new String(data.getData());
 						boolean answered = true;
@@ -397,7 +301,7 @@ public class UPNPNetwork {
 							answered = false;
 							for (final String schema : new String[]{URN_SCHEMAS_CONTENT_DIRECTORY, URN_SCHEMAS_MEDIA_SERVER, UPNP_ROOTDEVICE, URN_X_MS_MEDIA_RECEIVER_REGISTRAR_1, UPNPNetwork.this.cfg.getUSN()}) {
 								if (text.contains(schema)) {
-									sendReply(data.getAddress(), data.getPort(), buildDiscoverMsg(schema));
+									sendReply(data.getAddress(), data.getPort(), buildDiscoverMsg(data.getAddress().getHostAddress(),schema));
 									answered = true;
 								}
 							}
@@ -405,11 +309,7 @@ public class UPNPNetwork {
 								logger.trace("ignored m-search : " + text);
 							}
 						}
-//						if (!answered)
-//						System.out.println(text);
-//						listener.close();
-//						listener = null;
-						
+				
 					} catch (final Throwable e) {
 						if (this.listener != null) {
 							this.listener.close();
@@ -443,108 +343,5 @@ public class UPNPNetwork {
 		}
 		this.listenerThread = null;
 	}
-
-	
-//	private static Thread listener = null;
-//	private boolean isAlive;
-//	private static MulticastSocket socket;
-//	
-//	private boolean openMulticastSocket() {
-//		// TODO Auto-generated method stub
-//		return false;
-//	}
-//	
-//	@Override
-//	public void afterPropertiesSet() throws Exception {
-//		listener = new Thread() {
-//			
-//			@Override
-//			public void run() {
-//				super.run();
-//				isAlive = openMulticastSocket();
-//				while (isAlive) {
-//					DatagramPacket p = new DatagramPacket(new byte[1024], 1024);
-//					try {
-//						socket.receive(p);
-//						
-//						p.get
-//					} catch (IOException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//					
-//					
-//				}
-//			}
-//
-//
-//			
-//		};
-//		
-//	}
-//
-//	@Override
-//	public void destroy() throws Exception {
-//		// TODO Auto-generated method stub
-//		
-//	}
-
-
-
-//	private void sendDiscover(DatagramPacket packet_r, DatagramSocket socket) throws IOException {
-//		String data = new String(packet_r.getData());
-//		String remoteAddr = packet_r.getAddress().getHostAddress();
-//		int remotePort = packet_r.getPort();
-//
-//		if (data.startsWith("M-SEARCH")) {
-//			if (data.indexOf(UPNPNetwork.URN_SCHEMAS_CONTENT_DIRECTORY) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-content");
-//				sendDiscover(remoteAddr, remotePort,
-//						UPNPNetwork.URN_SCHEMAS_CONTENT_DIRECTORY);
-//			} else if (data.indexOf(UPNPNetwork.URN_SCHEMAS_CONNECTION_MANAGER) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-connection");
-//				sendDiscover(remoteAddr, remotePort,
-//						UPNPNetwork.URN_SCHEMAS_CONNECTION_MANAGER);
-//			} else 
-//				if (data.indexOf(UPNPNetwork.URN_SCHEMAS_MEDIA_SERVER) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-medias");
-//				sendDiscover(remoteAddr, remotePort,
-//						UPNPNetwork.URN_SCHEMAS_MEDIA_SERVER);
-//			} 
-//				else if (data
-//					.indexOf(UPNPNetwork.URN_X_MS_MEDIA_RECEIVER_REGISTRAR_1) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-ms-registrar");
-//				sendDiscover(remoteAddr, remotePort,
-//						UPNPNetwork.URN_X_MS_MEDIA_RECEIVER_REGISTRAR_1);
-//			} else if (data.indexOf(UPNPNetwork.UPNP_ROOTDEVICE) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-root");
-//				sendDiscover(remoteAddr, remotePort,
-//						UPNPNetwork.UPNP_ROOTDEVICE);
-//			} 
-//			
-//			else
-//
-//			if (data.indexOf(cfg.getUSN()) > 0) {
-//				logger.trace("Receiving a M-SEARCH from [" + remoteAddr + ":"
-//						+ remotePort + "] discover-usn");
-//				sendDiscover(remoteAddr, remotePort);
-//			} else 
-//			{
-//				//logger.debug("unknown discovery : " + data);
-//			}
-//		} else {
-////			logger.trace("don't handle data from [" + remoteAddr + ":" + remotePort + "] -> " + data);
-//		}
-//
-////		if (data.startsWith("NOTIFY")) {
-////			logger.trace("Receiving a NOTIFY from [" + remoteAddr + ":" + remotePort + "]");
-////		}
-//	}
-
 	
 }

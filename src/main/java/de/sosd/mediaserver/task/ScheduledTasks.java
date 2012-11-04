@@ -2,20 +2,19 @@ package de.sosd.mediaserver.task;
 
 import java.io.IOException;
 
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import de.sosd.mediaserver.service.FilesystemService;
 import de.sosd.mediaserver.service.MPlayerFileService;
+import de.sosd.mediaserver.service.MediaserverConfiguration;
+import de.sosd.mediaserver.service.NetworkDeviceService;
 import de.sosd.mediaserver.service.dlna.UPNPNetwork;
 
 @Service
-public class ScheduledTasks implements InitializingBean, ApplicationListener<ContextRefreshedEvent> {
+public class ScheduledTasks {
 	
 	@Autowired
 	private UPNPNetwork upnp;
@@ -29,19 +28,23 @@ public class ScheduledTasks implements InitializingBean, ApplicationListener<Con
 	@Autowired
 	private ProcessWatchdogService pws;
 	
-	private boolean upstart = true;
-
+	@Autowired
+	private NetworkDeviceService nds;
+	
+	@Autowired
+	private MediaserverConfiguration cfg;
+	
 	@Async
 	@Scheduled(fixedDelay=10000)
 	public void sendUPNPAlive() throws IOException {
-		if (!this.upstart) {
+		if (cfg.isSystemAvailable()) {
 			this.upnp.sendAlive();
 		}
 	}
 	
 	@Scheduled(fixedDelay = 60000)
 	public void rescanFilesystemForChanges() {
-		if (!this.upstart) {
+		if (cfg.isSystemAvailable()) {
 			this.fs.scanFilesystem();
 		}
 	}
@@ -49,7 +52,7 @@ public class ScheduledTasks implements InitializingBean, ApplicationListener<Con
 	@Async
 	@Scheduled(fixedDelay = 60000)
 	public void rescanDatabaseForMissingMetaInfos() {
-		if (!this.upstart) {
+		if (cfg.isSystemAvailable()) {
 			this.mfs.createMetaInfos();
 		}
 	}
@@ -57,7 +60,7 @@ public class ScheduledTasks implements InitializingBean, ApplicationListener<Con
 	@Async
 	@Scheduled(fixedDelay = 60000)
 	public void rescanDatabaseForMissingThumbnails() {
-		if (!this.upstart) {
+		if (cfg.isSystemAvailable()) {
 			this.mfs.createThumbnails();
 		}
 	}
@@ -65,22 +68,17 @@ public class ScheduledTasks implements InitializingBean, ApplicationListener<Con
 	@Async
 	@Scheduled(fixedDelay = 5000)
 	public void checkProcesses() {
-		if (!this.upstart) {
+		if (cfg.isSystemAvailable()) {
 			this.pws.checkProcesses();
 		}
 	}
 	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		this.upstart = true;
-		
+	@Async
+	@Scheduled(fixedDelay=1000) 
+	public void checkNetworkDevices() {
+		if (cfg.isSystemAvailable()) {
+			nds.updateDeviceList();
+		}
 	}
-	
-	@Override
-	public void onApplicationEvent(final ContextRefreshedEvent event) {
-		this.upstart = false;
-		
-	}
-		
 	
 }
