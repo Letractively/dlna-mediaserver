@@ -79,11 +79,21 @@ public class ContentDirectoryService {
 				filter,
 				sort,			
 				wlb);
-		String responseText = createResponse(response, didlLite);
-//		System.out.println("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
-//		System.out.println(responseText);		
-		logger.info("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"]");	
-		
+		createResponse(response, didlLite);
+		if (logger.isTraceEnabled()) {
+			traceRequestAndResponse(request.getBrowseFlag().value(), request.getObjectID(), request.getFilter(), request.getStartingIndex(), request.getRequestedCount(),request.getSortCriteria(),  response.getResult(), response.getNumberReturned(), response.getTotalMatches(), response.getUpdateID());
+		} else {
+			logger.debug("BrowseMetadata ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"]");	
+		}
+	}
+
+	private void traceRequestAndResponse(String requestType, String objectID, String filter,
+			Integer startingIndex, Integer requestedCount, String sortCriteria,
+			String result, int numberReturned, int totalMatches, int updateID) {
+		logger.trace("trace request :\n(" + requestType + " " + objectID + " filter=" + filter + " sort by=" + sortCriteria + ") " + startingIndex + "," + requestedCount + "\n" 
+					+ "(found=" + numberReturned + " of matches="  + totalMatches + ", updateId=" + updateID + ")\n"
+					+ result
+				);
 	}
 
 	private String getLocalObjectId(final String objectID) {
@@ -93,32 +103,12 @@ public class ContentDirectoryService {
 		return objectID;
 	}
 
-	private String createResponse(final ContentResponse response, final DidlXmlCreator didlLite) throws JAXBException, IOException {
-//		JAXBContext context = JAXBContext.newInstance(DIDLLite.class);
-//		Marshaller m = context.createMarshaller();
-//		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, false);
-//		m.setProperty("com.sun.xml.internal.bind.namespacePrefixMapper",  new PreferredNamespaceMapper());
-//		m.setProperty("jaxb.fragment", Boolean.TRUE);
-//		
-//		StringWriter sw = new StringWriter();
-//		m.marshal(didlLite , sw);
-//		sw.close();
+	private void createResponse(final ContentResponse response, final DidlXmlCreator didlLite) throws JAXBException, IOException {
 		response.setResult(didlLite.getXml());
 		response.setNumberReturned(didlLite.getTotalObjectCount());
 		response.setTotalMatches(didlLite.getTotalMatchesCount());	
 		response.setUpdateID(getSystemUpdateId());
-		return response.getResult();
 	}
-
-//	private int countContainer(List<ContainerType> container) {
-//		int result = container.size();
-//		for (ContainerType ct : container) {
-//			result += countContainer(ct.getContainer());
-//			result += ct.getItem().size();
-//		}
-//		
-//		return result;
-//	}
 
 	public void browseDirectChildren(final Browse request,	final BrowseResponse response, final DeviceByRequestHeader device, WebappLocationBean wlb) throws JAXBException, IOException {	
 		final String objectId = getLocalObjectId(request.getObjectID());
@@ -137,12 +127,12 @@ public class ContentDirectoryService {
 					filter,
 					sort,
 					wlb);
-		
-		
-		String responseText = createResponse(response, didl);
-//		System.out.println("BrowseDirectChildren ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
-//		System.out.println(responseText);
-		logger.info("BrowseDirectChildren ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	
+		createResponse(response, didl);
+		if (logger.isTraceEnabled()) {
+			traceRequestAndResponse(request.getBrowseFlag().value(), request.getObjectID(), request.getFilter(), request.getStartingIndex(), request.getRequestedCount(),request.getSortCriteria(),  response.getResult(), response.getNumberReturned(), response.getTotalMatches(), response.getUpdateID());
+		} else {
+			logger.info("BrowseDirectChildren ["+request.getObjectID()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");		
+		}
 	}
 
 	public void search(final Search request, final SearchResponse response,
@@ -162,23 +152,23 @@ public class ContentDirectoryService {
 			fetchSize = requestedCount.intValue();
 		}
 		
-//		if (request.getContainerId().equals("0")) {
-		final DidlXmlCreator didl = this.didlDao.getSearchItems(objectId,
-					where,
-					searchParameters,
-					request.getStartingIndex(), 
-					fetchSize,
-					filter,
-					sort,
-					wlb
-				);		
-//		
-//		
-		
-		String responseText = createResponse(response, didl);
-//		System.out.println("Search ["+request.getContainerId()+","+request.getStartingIndex()+","+request.getRequestedCount()+"] -> ["+response.getNumberReturned().getValue()+","+response.getTotalMatches().getValue()+"] ");
-//		System.out.println(responseText);		
+		final DidlXmlCreator didl = this.didlDao.getSearchItems(
+			objectId,
+			where,
+			searchParameters,
+			request.getStartingIndex(), 
+			fetchSize,
+			filter,
+			sort,
+			wlb
+		);		
+
+		createResponse(response, didl);
+		if (logger.isTraceEnabled()) {
+			traceRequestAndResponse("Search", request.getContainerID(), request.getFilter(), request.getStartingIndex(), request.getRequestedCount(),request.getSortCriteria(),  response.getResult(), response.getNumberReturned(), response.getTotalMatches(), response.getUpdateID());
+		} else {
 		logger.info("Search ["+request.getContainerID()+","+request.getStartingIndex()+","+request.getRequestedCount()+","+request.getSearchCriteria()+"] -> ["+response.getNumberReturned()+","+response.getTotalMatches()+"] ");	
+		}
 	}
 
 	public void getSearchCapabilities(final GetSearchCapabilities request,

@@ -16,44 +16,17 @@
 
 	<context:spring-configured />
 
-
-
 	<!-- database -->
 
-	<jee:jndi-lookup id="tomcatDatasource" jndi-name="java:comp/env/jdbc/mediaserver"
-		resource-ref="true" />
-	<jee:jndi-lookup id="hibernateDialect"
-		jndi-name="java:comp/env/mediaserver.database.dialect" resource-ref="true" />
-<!-- 	<jee:jndi-lookup id="cfgWebappName" -->
-<!-- 		jndi-name="java:comp/env/mediaserver.webapp.name" resource-ref="true" /> -->
-<!-- 	<jee:jndi-lookup id="cfgServerHostname" -->
-<!-- 		jndi-name="java:comp/env/mediaserver.server.hostname" resource-ref="true" /> -->
-<!-- 	<jee:jndi-lookup id="cfgServerPort" -->
-<!-- 		jndi-name="java:comp/env/mediaserver.server.port" resource-ref="true" /> -->
+	<jee:jndi-lookup id="tomcatDatasource" jndi-name="java:comp/env/jdbc/mediaserver" resource-ref="true" />
+	<jee:jndi-lookup id="hibernateDialect" jndi-name="java:comp/env/mediaserver.database.dialect" resource-ref="true" />
 
-<!-- 	<bean class="de.sosd.mediaserver.service.MediaserverConfiguration" id="mediaserverConfiguration" name="MediaserverConfiguration"> -->
-<!-- 		<property name="hostname" ref="cfgServerHostname"/> -->
-<!-- 		<property name="port" ref="cfgServerPort"/> -->
-<!-- 		<property name="webappName" ref="cfgWebappName"/> -->
-<!-- 	</bean> -->
-
-	<bean class="org.springframework.orm.jpa.JpaTransactionManager"
-		id="transactionManager">
-		<property name="entityManagerFactory" ref="entityManagerFactory" />
-	</bean>
-
-	<tx:annotation-driven mode="aspectj"
-		transaction-manager="transactionManager" />
-
-	<bean
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
-		id="entityManagerFactory">
-
+	<bean class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" id="entityManagerFactory">
 		<property name="dataSource" ref="tomcatDatasource" />
 		<property name="persistenceUnitName" value="mediaserver" />
 		<property name="jpaPropertyMap">
 			<map>
-				<entry key="hibernate.dialect"><ref bean="hibernateDialect" /></entry>
+				<entry key="hibernate.dialect" value-ref="hibernateDialect" />
 				<entry key="hibernate.show_sql" value="false" />
 				<entry key="hibernate.format_sql" value="false" />
 				<entry key="hibernate.hbm2ddl.auto" value="update" />
@@ -63,16 +36,29 @@
 		</property>
 	</bean>
 
+	<bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
+		<property name="entityManagerFactory" ref="entityManagerFactory" />
+	</bean>
+
+	<tx:annotation-driven mode="aspectj"
+		transaction-manager="transactionManager" />
+
+	<!-- scan for annotated beans -->
+
 	<context:component-scan base-package="de.sosd.mediaserver.dao" />
 	<context:component-scan base-package="de.sosd.mediaserver.service" />
 	<context:component-scan base-package="de.sosd.mediaserver.process" />	
 	<context:component-scan base-package="de.sosd.mediaserver.task" />
 	<context:component-scan base-package="de.sosd.mediaserver.util" />
 	
+	<!-- tasks -->
+	
 	<bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" id="taskExecuter" name="TaskExecuter">
 		<property name="queueCapacity" value="5" />
 		<property name="maxPoolSize" value="10" />
 	</bean>
+
+
 
 	<task:annotation-driven proxy-target-class="true" executor="taskExecuter"/>
 </beans>

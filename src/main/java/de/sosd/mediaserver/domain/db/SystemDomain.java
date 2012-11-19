@@ -22,9 +22,6 @@ import javax.persistence.TemporalType;
 @Entity(name = "System")
 @Table(name = "system")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@org.hibernate.annotations.Entity(
-		dynamicUpdate = true
-)
 public class SystemDomain implements Serializable {
 
 	/**

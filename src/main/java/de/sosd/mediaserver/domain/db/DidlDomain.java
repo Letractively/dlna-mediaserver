@@ -36,9 +36,6 @@ import de.sosd.mediaserver.util.DidlXmlCreator;
 @Table(name="dlna")
 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 @EntityListeners(value = { ThumbnailPurger.class })
-@org.hibernate.annotations.Entity(
-		dynamicUpdate = true
-)
 public class DidlDomain implements Serializable {
 
 	/**

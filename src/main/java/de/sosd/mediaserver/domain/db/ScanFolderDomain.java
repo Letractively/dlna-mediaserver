@@ -26,9 +26,6 @@ import javax.persistence.TemporalType;
 @Entity(name = "Folder")
 @Table(name = "folders")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@org.hibernate.annotations.Entity(
-		dynamicUpdate = true
-)
 public class ScanFolderDomain implements Serializable {
 
 	/**

@@ -13,7 +13,7 @@
 		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
 
 	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
-<!-- 	<context:spring-configured /> -->
+
 	<!-- Enables the Spring MVC @Controller programming model -->
 	<mvc:annotation-driven />
 
@@ -29,13 +29,11 @@
 	<mvc:interceptors>    
 	    <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
 	        <property name="paramName" value="locale" />
-
 		</bean> 
 	</mvc:interceptors>
 	
 	<!-- Declare the Resolver -->
 	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver">
-<!-- 		<property name="defaultLocale" value="en"/> -->
 		<property name="cookieName" value="locale"/>
 	</bean>	
 	
@@ -45,7 +43,8 @@
 		<property name="prefix" value="/WEB-INF/views/" />
 		<property name="suffix" value=".jsp" />
 	</bean>	
-	
+
+	<!-- find controllers -->	
 	<context:component-scan base-package="de.sosd.mediaserver.controller" />
 
 </beans>

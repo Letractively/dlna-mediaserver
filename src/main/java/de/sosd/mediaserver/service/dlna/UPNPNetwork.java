@@ -84,27 +84,18 @@ public class UPNPNetwork {
 		return getNewMulticastSocket(UPNP_PORT);
 	}
 
-
-//	NOTIFY * HTTP/1.1
-//
-//	Host:[FF02::C]:1900
-//
-//	NT:uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
-//
-//	NTS:ssdp:byebye
-//
-//	Location:http://[fe80::6503:d31b:18c7:2f69]:2869/upnphost/udhisapi.dll?content=uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
-//
-//	USN:uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
-//
-//	Cache-Control:max-age=1800
-//
-//	Server:Microsoft-Windows-NT/5.1 UPnP/1.0 UPnP-Device-Host/1.0
-//
-//	OPT:"http://schemas.upnp.org/upnp/1/0/"; ns=01
-//
-//	01-NLS:bb72a37c619b42ac9f26689d1980cd7d
-
+	/**
+		NOTIFY * HTTP/1.1
+		Host:[FF02::C]:1900
+		NT:uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
+		NTS:ssdp:byebye
+		Location:http://[fe80::6503:d31b:18c7:2f69]:2869/upnphost/udhisapi.dll?content=uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
+		USN:uuid:39eb073b-14a7-4d00-a3c7-91ee88978a77
+		Cache-Control:max-age=1800
+		Server:Microsoft-Windows-NT/5.1 UPnP/1.0 UPnP-Device-Host/1.0
+		OPT:"http://schemas.upnp.org/upnp/1/0/"; ns=01
+		01-NLS:bb72a37c619b42ac9f26689d1980cd7d
+ 	**/
 	public void sendByeBye() {
 		logger.debug("Sending ByeBye...");
 		sendStatus(BYEBYE);
@@ -151,31 +142,27 @@ public class UPNPNetwork {
 	}
 
 	/**
-	 
--	HTTP/1.1 200 OK
+	HTTP/1.1 200 OK
 	CACHE-CONTROL:max-age=1200
 	DATE:Sat, 23 Jul 2011 22:13:42 GMT
--	LOCATION:http://192.168.101.227:9090/MediaserverWeb/dlna/description/fetch
+	LOCATION:http://192.168.101.227:9090/MediaserverWeb/dlna/description/fetch
 	SERVER:Mediaserver
--	ST:urn:schemas-upnp-org:device:MediaServer:1
+	ST:urn:schemas-upnp-org:device:MediaServer:1
 	EXT:
--	USN:uuid:614146ca-f169-3d3c-b228-87a712faf143::urn:schemas-upnp-org:device:MediaServer:1
+	USN:uuid:614146ca-f169-3d3c-b228-87a712faf143::urn:schemas-upnp-org:device:MediaServer:1
 	Content-Length:0 
-	
 	 **/
 	
 	/**
-		 
--	HTTP/1.1 200 OK	
--	ST:urn:schemas-upnp-org:device:MediaServer:1	
--	USN:uuid:cdca376d-cb81-4b2e-95a7-9bf7dd2347a3::urn:schemas-upnp-org:device:MediaServer:1	
--	Location:http://192.168.101.227:2869/upnphost/udhisapi.dll?content=uuid:cdca376d-cb81-4b2e-95a7-9bf7dd2347a3	
+	HTTP/1.1 200 OK	
+	ST:urn:schemas-upnp-org:device:MediaServer:1	
+	USN:uuid:cdca376d-cb81-4b2e-95a7-9bf7dd2347a3::urn:schemas-upnp-org:device:MediaServer:1	
+	Location:http://192.168.101.227:2869/upnphost/udhisapi.dll?content=uuid:cdca376d-cb81-4b2e-95a7-9bf7dd2347a3	
 	OPT:"http://schemas.upnp.org/upnp/1/0/"; ns=01	
 	01-NLS:b6d7028a8b1e541d7e757d0b6db33a00	
 	Cache-Control:max-age=900	
 	Server:Microsoft-Windows-NT/5.1 UPnP/1.0 UPnP-Device-Host/1.0	
 	Ext:
-	
 	 **/	
 
 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/mediaserver" privileged="true" >
+
+	<Environment 
+		name="mediaserver.database.dialect"
+	    override="falses"
+	    type="java.lang.String"
+		value="org.hibernate.dialect.H2Dialect"
+	/>
+
+    <Resource
+        name="jdbc/mediaserver"
+        auth="Container"
+        driverClassName="org.h2.Driver"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        password="mediaserver"
+        type="javax.sql.DataSource"
+        url="jdbc:h2:mem:mediaserver"
+        username="mediaserver" 
+    />
+
+
+</Context>

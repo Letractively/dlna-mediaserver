@@ -7,23 +7,18 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import de.sosd.mediaserver.domain.db.DidlDomain;
 import de.sosd.mediaserver.domain.db.SystemDomain;
-import de.sosd.mediaserver.service.MediaserverConfiguration;
 
 @Service
 public class SystemDao {
 
 	@PersistenceContext(name = "mediaserver")
 	protected EntityManager manager;
-	
-	@Autowired
-	private MediaserverConfiguration cfg;
 	
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public SystemDomain getSystem(String usn) {

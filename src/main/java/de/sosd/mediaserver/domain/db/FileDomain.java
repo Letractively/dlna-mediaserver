@@ -20,9 +20,6 @@ import javax.persistence.TemporalType;
 @Entity(name = "File")
 @Table(name = "files")
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
-@org.hibernate.annotations.Entity(
-		dynamicUpdate = true
-)
 public class FileDomain implements Serializable {
 
 	/**

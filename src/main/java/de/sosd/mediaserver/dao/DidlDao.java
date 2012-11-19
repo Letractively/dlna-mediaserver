@@ -16,7 +16,6 @@ import de.sosd.mediaserver.bean.StringKeyValuePair;
 import de.sosd.mediaserver.bean.WebappLocationBean;
 import de.sosd.mediaserver.domain.db.ClassNameWcType;
 import de.sosd.mediaserver.domain.db.DidlDomain;
-import de.sosd.mediaserver.domain.db.ScanFolderState;
 import de.sosd.mediaserver.util.DidlXmlCreator;
 
 @Service

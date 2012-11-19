@@ -17,9 +17,6 @@ import de.sosd.mediaserver.bean.NetworkDeviceBean;
 @Entity(name="network")
 @Table(name="network")
 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
-@org.hibernate.annotations.Entity(
-		dynamicUpdate = true
-)
 public class NetworkDeviceDomain implements Serializable {
 
 	/**
