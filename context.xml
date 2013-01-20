@@ -1,0 +1,85 @@
+<Context path="/mediaserver" docBase="/mnt/software/runtime/webapps/mediaserver-1.1.1.war">
+     
+    <Environment
+        name="mediaserver.webapp.name"
+        override="false"
+        type="java.lang.String"
+        value="mediaserver" />
+
+    <Environment
+        name="mediaserver.server.hostname"
+        override="false"
+        type="java.lang.String"
+        value="192.168.101.227" />
+        
+    <Environment
+        name="mediaserver.server.port"
+        override="false"
+        type="java.lang.Integer"
+        value="9090" />        
+
+<!-- 	H2 -->
+<!-- 
+	<Environment 
+		name="mediaserver.database.dialect"
+	    override="false"
+	    type="java.lang.String"
+		value="org.hibernate.dialect.H2Dialect"
+	/>
+
+    <Resource
+        name="jdbc/mediaserver"
+        auth="Container"
+        driverClassName="org.h2.Driver"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        password="password"
+        type="javax.sql.DataSource"
+        url="jdbc:h2:D:/test/mediaserver-h2"
+        username="username" />
+ -->
+
+<!-- Derby -->
+<!-- 
+	<Environment 
+		name="mediaserver.database.dialect"
+	    override="false"
+	    type="java.lang.String"
+		value="org.hibernate.dialect.DerbyDialect"
+	/>
+
+    <Resource
+        name="jdbc/mediaserver"
+        auth="Container"
+        driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        password="password"
+        type="javax.sql.DataSource"
+        url="jdbc:derby:D:/test/mediaserver;create=true"
+        username="username" />
+-->
+
+<!-- 	MySQL -->
+	<Environment 
+		name="mediaserver.database.dialect"
+	    override="false"
+	    type="java.lang.String"
+		value="org.hibernate.dialect.MySQL5InnoDBDialect"
+	/>
+
+    <Resource
+        name="jdbc/mediaserver"
+        auth="Container"
+        driverClassName="com.mysql.jdbc.Driver"
+        maxActive="100"
+        maxIdle="30"
+        maxWait="10000"
+        password="password"
+        type="javax.sql.DataSource"
+        url="jdbc:mysql://192.168.101.50:3306/mediaserver?useUnicode=yes&amp;characterEncoding=UTF-8"
+        username="username" />
+    
+</Context>

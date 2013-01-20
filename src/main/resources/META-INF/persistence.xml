@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+
+	<persistence-unit name="mediaserver" transaction-type="RESOURCE_LOCAL">
+	
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+
+        <class>de.sosd.mediaserver.domain.db.FileDomain</class>
+        <class>de.sosd.mediaserver.domain.db.DidlDomain</class>
+        <class>de.sosd.mediaserver.domain.db.ScanFolderDomain</class>
+        <class>de.sosd.mediaserver.domain.db.SystemDomain</class>
+
+	</persistence-unit>
+
+</persistence>
