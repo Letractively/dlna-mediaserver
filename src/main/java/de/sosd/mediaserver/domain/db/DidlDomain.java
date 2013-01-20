@@ -826,7 +826,7 @@ public class DidlDomain implements Serializable {
 	 * 
 	 * 
 	 * */
-	public void intoDidlXml(final StringBuffer out, final DidlXmlCreator helper) {
+	public void intoDidlXml(final StringBuilder out, final DidlXmlCreator helper) {
 		if (isContainer()) {
 			containerIntoDidl(out, helper);
 		} else {
@@ -834,7 +834,7 @@ public class DidlDomain implements Serializable {
 		}		
 	}
 
-	private void containerIntoDidl(final StringBuffer out, final DidlXmlCreator helper) {
+	private void containerIntoDidl(final StringBuilder out, final DidlXmlCreator helper) {
 //	  <container id="0$0$0$0" childCount="0" parentID="0$0$0" restricted="true">
 //	    <dc:title>Planet Of The Apes Legacy Collection</dc:title>
 //	    <dc:date>2009-09-11T23:53:10</dc:date>
@@ -882,7 +882,7 @@ public class DidlDomain implements Serializable {
 		out.append("</container>");
 	}
 
-	private void itemIntoDidl(final StringBuffer out, final DidlXmlCreator helper) {
+	private void itemIntoDidl(final StringBuilder out, final DidlXmlCreator helper) {
 		// write node and attributes
 		out.append("<item id=\"");
 		out.append(helper.translateId(this));
@@ -927,7 +927,7 @@ public class DidlDomain implements Serializable {
 
 
 
-	private void addFolderPathMS(final StringBuffer out) {
+	private void addFolderPathMS(final StringBuilder out) {
 		/*
 	    <desc id="folderPath" nameSpace="urn:schemas-microsoft-com:WMPNSS-1-0/" xmlns:microsoft="urn:schemas-microsoft-com:WMPNSS-1-0/">
 	      <microsoft:folderPath>Filme</microsoft:folderPath>
@@ -944,7 +944,7 @@ public class DidlDomain implements Serializable {
 
 
 
-	private void addUserRatingMS(final StringBuffer out) {
+	private void addUserRatingMS(final StringBuilder out) {
 		/*
 		 <desc id="UserRating" nameSpace="urn:schemas-microsoft-com:WMPNSS-1-0/" xmlns:microsoft="urn:schemas-microsoft-com:WMPNSS-1-0/">
 	      <microsoft:userEffectiveRatingInStars>3</microsoft:userEffectiveRatingInStars>
@@ -957,7 +957,7 @@ public class DidlDomain implements Serializable {
 		out.append("</desc>");
 	}
 
-	private void addScheduledStartTime(final StringBuffer out, final DidlXmlCreator helper) {
+	private void addScheduledStartTime(final StringBuilder out, final DidlXmlCreator helper) {
 		// <upnp:scheduledStartTime>2011-06-14T20:21:00</upnp:scheduledStartTime>
 		out.append("<upnp:scheduledStartTime>");
 		out.append(helper.formatDateWithTime(new Date()));
@@ -965,7 +965,7 @@ public class DidlDomain implements Serializable {
 				
 	}
 
-	private void addDate(final StringBuffer out, final DidlXmlCreator helper) {
+	private void addDate(final StringBuilder out, final DidlXmlCreator helper) {
 		// <dc:date>2011-06-14</dc:date>
 		if (getDate() != null) {
 			out.append("<dc:date>");
@@ -975,7 +975,7 @@ public class DidlDomain implements Serializable {
 	}
 
 
-	private void addAlbum(final StringBuffer out) {
+	private void addAlbum(final StringBuilder out) {
 		// <upnp:album>[Unbekannte Serie]</upnp:album>
 		if (getAlbum() != null) {
 			out.append("<upnp:album>");
@@ -984,7 +984,7 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
-	private void addAlbumArtURI(final StringBuffer out, final DidlXmlCreator helper) {
+	private void addAlbumArtURI(final StringBuilder out, final DidlXmlCreator helper) {
 		/* 
 		 <upnp:albumArtURI dlna:profileID="JPEG_SM"	xmlns:dlna="urn:schemas-dlna-org:metadata-1-0/"
 		 >
@@ -994,7 +994,7 @@ public class DidlDomain implements Serializable {
 		helper.writeAlbumArtURI(this, out);
 	}	
 
-	private void addArtist(final StringBuffer out) {
+	private void addArtist(final StringBuilder out) {
 		// <upnp:artist role="Performer">[Unbekannter Autor]</upnp:artist>
 		if (getArtist() != null) {
 			out.append("<upnp:artist>");
@@ -1003,7 +1003,7 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
-	private void addArtistMS(final StringBuffer out) {
+	private void addArtistMS(final StringBuilder out) {
 		/*
 	    <desc id="artist" nameSpace="urn:schemas-microsoft-com:WMPNSS-1-0/" xmlns:microsoft="urn:schemas-microsoft-com:WMPNSS-1-0/">
 	      <microsoft:artistPerformer>[Unbekannter Autor]</microsoft:artistPerformer>
@@ -1016,7 +1016,7 @@ public class DidlDomain implements Serializable {
 		}
 	}	
 	
-	private void addActor(final StringBuffer out) {
+	private void addActor(final StringBuilder out) {
 		// <upnp:actor>[Unbekannter Autor]</upnp:actor>
 		if (getArtist() != null) {
 			out.append("<upnp:actor>");
@@ -1025,7 +1025,7 @@ public class DidlDomain implements Serializable {
 		}
 	}	
 	
-	private void addGenre(final StringBuffer out) {
+	private void addGenre(final StringBuilder out) {
 		// <upnp:genre>[Unbekanntes Genre]</upnp:genre>
 		if (getGenre() != null) {
 			out.append("<upnp:genre>");
@@ -1034,7 +1034,7 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
-	private void addTrack(StringBuffer out) {
+	private void addTrack(StringBuilder out) {
 		// <upnp:originalTrackNumber>1</upnp:originalTrackNumber>
 		if (getTrack() != null) {
 			out.append("<upnp:originalTrackNumber>");
@@ -1043,14 +1043,14 @@ public class DidlDomain implements Serializable {
 		}	
 	}
 	
-	private void addClass(final StringBuffer out) {
+	private void addClass(final StringBuilder out) {
 		// <upnp:class>object.item.videoItem</upnp:class>
 		out.append("<upnp:class>");
 		out.append(getClassType().value());
 		out.append("</upnp:class>");		
 	}
 
-	private void addStreamRes(final StringBuffer out, final DidlXmlCreator helper) {
+	private void addStreamRes(final StringBuilder out, final DidlXmlCreator helper) {
 		/*
 		 	    <res 
 					size="1469855744" 
@@ -1117,7 +1117,7 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
-	private void addThumbRes(final StringBuffer out, final DidlXmlCreator helper) {
+	private void addThumbRes(final StringBuilder out, final DidlXmlCreator helper) {
 		/*
 		   <res 
 		   	protocolInfo="http-get:*:image/jpeg:DLNA.ORG_PN=JPEG_TN;DLNA.ORG_CI=1;DLNA.ORG_FLAGS=00f00000000000000000000000000000"
@@ -1149,7 +1149,7 @@ public class DidlDomain implements Serializable {
 //		}		
 	}
 
-	private void addCreator(final StringBuffer out) {
+	private void addCreator(final StringBuilder out) {
 		// <dc:creator>[Unbekannter Autor]</dc:creator>
 		if (getArtist() != null) {
 			out.append("<dc:creator>");
@@ -1158,7 +1158,7 @@ public class DidlDomain implements Serializable {
 		}
 	}
 
-	private void addTitle(final StringBuffer out) {
+	private void addTitle(final StringBuilder out) {
 		// <dc:title>5.Days.of.War</dc:title>
 		if (getTitle() != null) {
 			out.append("<dc:title>");

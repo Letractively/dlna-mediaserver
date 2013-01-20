@@ -24,8 +24,8 @@ public class FileIdTest {
 				"//HERMINE/software", "//HERMINE/video", "//HERMINE/wg" };
 
 		final Map<String, File> idFileMap = new HashMap<String, File>();
-		final StringBuffer errors = new StringBuffer();
-		final StringBuffer fserrors = new StringBuffer();
+		final StringBuilder errors = new StringBuilder();
+		final StringBuilder fserrors = new StringBuilder();
 		for (final String path : paths) {
 			fillMap(new File(path), idFileMap, errors, fserrors);
 		}
@@ -52,7 +52,7 @@ public class FileIdTest {
 	}
 
 	private static void fillMap(final File srcDir, final Map<String, File> idFileMap,
-			final StringBuffer errors, final StringBuffer fserrors) {
+			final StringBuilder errors, final StringBuilder fserrors) {
 
 		try {
 			 

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/mediaserver" privileged="true" >
 
-	<Environment 
+<!-- 	<Environment 
 		name="mediaserver.database.dialect"
-	    override="falses"
+	    override="false"
 	    type="java.lang.String"
 		value="org.hibernate.dialect.H2Dialect"
 	/>
@@ -19,7 +19,8 @@
         type="javax.sql.DataSource"
         url="jdbc:h2:mem:mediaserver"
         username="mediaserver" 
+        override="false"
     />
 
-
+ -->
 </Context>

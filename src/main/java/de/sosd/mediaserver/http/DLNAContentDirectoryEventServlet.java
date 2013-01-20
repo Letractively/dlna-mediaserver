@@ -45,7 +45,7 @@ public class DLNAContentDirectoryEventServlet extends DLNAEventServlet {
 			final HttpServletResponse response) {
 //		@SuppressWarnings("rawtypes")
 //		Enumeration headerNames = request.getHeaderNames();
-//		StringBuffer sb = new StringBuffer("subscription on ContentDirectory from: " + request.getRemoteAddr() + "\n");
+//		StringBuilder sb = new StringBuilder("subscription on ContentDirectory from: " + request.getRemoteAddr() + "\n");
 //		while (headerNames.hasMoreElements()) {
 //			String headerName = (String) headerNames.nextElement();
 //			sb.append(headerName + ": " + request.getHeader(headerName) + "\n");

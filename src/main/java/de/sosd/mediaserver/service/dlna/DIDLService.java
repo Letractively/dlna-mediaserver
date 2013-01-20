@@ -260,7 +260,7 @@ public class DIDLService {
 
 	private String getSortedExtensionString(
 			final Set<String> set) {
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for (final String s : getSortedExtensionList(set)) {
 			if (!first) {

@@ -196,7 +196,7 @@ public class UPNPNetwork {
 	}
 
 	private String buildNotifyMsg(String address, String nt, final String message) {
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 
 		sb.append("NOTIFY * HTTP/1.1");
 		sb.append(CRLF);
@@ -227,7 +227,7 @@ public class UPNPNetwork {
 	private String buildDiscoverMsg(String address, final String st) {
 		
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		String usn = this.cfg.getUSN();
 		if (st.equals(usn)) {
 			usn = "";
