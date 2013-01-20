@@ -353,6 +353,8 @@ public class DLNAController {
 				}
 				input.seek(start);
 				
+				
+				response.setStatus(HttpStatus.OK.value());
 				final byte[] buffer = new byte[1024];
 				int size = 0;
 				long pos = start;
@@ -365,8 +367,6 @@ public class DLNAController {
 					
 				} while ((size == buffer.length) && (pos < stop));
 				response.setContentLength((int)(pos - start));
-				
-				response.setStatus(HttpStatus.OK.value());
 			} catch (final FileNotFoundException e) {
 				response.setStatus(HttpStatus.NOT_FOUND.value());
 				logger.error(e);
@@ -387,7 +387,7 @@ public class DLNAController {
 	private void logRequest(String method, HttpServletRequest request) throws IOException {
 		@SuppressWarnings("rawtypes")
 		Enumeration headerNames = request.getHeaderNames();
-		StringBuffer sb = new StringBuffer(method + " -> " + request.getRemoteAddr() + " -> "+request.getPathInfo()+"\n");
+		StringBuilder sb = new StringBuilder(method + " -> " + request.getRemoteAddr() + " -> "+request.getPathInfo()+"\n");
 		while (headerNames.hasMoreElements()) {
 			String headerName = (String) headerNames.nextElement();
 			sb.append(headerName + ": " + request.getHeader(headerName) + "\n");

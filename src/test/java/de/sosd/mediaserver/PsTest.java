@@ -46,7 +46,7 @@ public class PsTest {
 			
 		}
 
-		final StringBuffer sb = new StringBuffer();
+		final StringBuilder sb = new StringBuilder();
 		for (final ProcessToWatch proc : result) {
 			sb.append(proc.toString());
 			sb.append("\n");

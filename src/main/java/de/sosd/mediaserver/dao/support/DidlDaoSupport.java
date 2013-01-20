@@ -57,9 +57,9 @@ public class DidlDaoSupport {
     	final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     	
     	final String[] words = search.replaceAll("\\(" , "\\( ").replaceAll("\\)", " \\)").split(" ");
-    	final StringBuffer hql = new StringBuffer();
+    	final StringBuilder hql = new StringBuilder();
     	ParserState ps = ParserState.NAME;
-    	StringBuffer stmt = new StringBuffer();
+    	StringBuilder stmt = new StringBuilder();
     	boolean valid = true;
 //    	boolean complete = false;
     	
@@ -78,7 +78,7 @@ public class DidlDaoSupport {
     						hql.append(stmt);
     						valid = false;
     					}
-    					stmt = new StringBuffer();
+    					stmt = new StringBuilder();
     					stmt.append(" ");
     					stmt.append(word);
     					stmt.append(" ");
@@ -209,7 +209,7 @@ public class DidlDaoSupport {
 	 */
 	public String translateSortCriteria(final String sortCriteria) {
 		// " order by didl.classType asc, didl.title asc, didl.date desc"
-		final StringBuffer result = new StringBuffer();
+		final StringBuilder result = new StringBuilder();
 		boolean first = true;
 		// default sort by container before items, title ascending, latest last 
 		String[] sorts = {"-upnp:class","+dc:title","+dc:date"};

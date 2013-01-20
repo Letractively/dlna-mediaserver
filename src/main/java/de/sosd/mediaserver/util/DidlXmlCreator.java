@@ -24,7 +24,7 @@ public class DidlXmlCreator {
 	private int objectCounter;
 	private int totalMatches;
 	private int updateId;
-	private final StringBuffer buffer;
+	private final StringBuilder buffer;
 	private String serverID;
 	private String httpServerUrl;	
 	
@@ -37,7 +37,7 @@ public class DidlXmlCreator {
 
 	public DidlXmlCreator(WebappLocationBean wlb) {
 		this.location = wlb;
-		this.buffer = new StringBuffer();
+		this.buffer = new StringBuilder();
 	}
 	
 	public void addDidlObject(final DidlDomain didlObject) {
@@ -100,7 +100,7 @@ public class DidlXmlCreator {
 	}
 
 	public String getXml() {
-		final StringBuffer result = new StringBuffer();
+		final StringBuilder result = new StringBuilder();
 		// node
 		result.append("<DIDL-Lite xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:upnp=\"urn:schemas-upnp-org:metadata-1-0/upnp/\" xmlns=\"urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/\">");
 		// content
@@ -206,7 +206,7 @@ public class DidlXmlCreator {
 			this.url = url;
 		}
 		
-		protected void writeAlbumArtURI(StringBuffer out) {
+		protected void writeAlbumArtURI(StringBuilder out) {
 			out.append("<upnp:albumArtURI dlna:profileID=\"");
 			out.append(name);
 			out.append("\" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\">");
@@ -220,7 +220,7 @@ public class DidlXmlCreator {
 			out.append("</upnp:albumArtURI>");			
 		}
 
-		protected void writeRes(StringBuffer out) {
+		protected void writeRes(StringBuilder out) {
 			out.append("<res resolution=\"");
 			out.append(width);
 			out.append("x");
@@ -242,7 +242,7 @@ public class DidlXmlCreator {
 	
 	private final List<CachedImageSource> cachedImagesSources = new ArrayList<CachedImageSource>();
 	
-	public void writeAlbumArtURI(DidlDomain dd, StringBuffer out) {
+	public void writeAlbumArtURI(DidlDomain dd, StringBuilder out) {
 		if (cachedImagesSources.isEmpty()) {
 			findCacheableImages(dd);
 		}
@@ -251,7 +251,7 @@ public class DidlXmlCreator {
 		}
 	}
 	
-	public void writeThumbRes(DidlDomain dd, StringBuffer out) {
+	public void writeThumbRes(DidlDomain dd, StringBuilder out) {
 		if (cachedImagesSources.isEmpty()) {
 			findCacheableImages(dd);
 		}

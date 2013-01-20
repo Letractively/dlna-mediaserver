@@ -152,7 +152,7 @@ public class ProcessWatchdogService implements ApplicationListener<ContextClosed
 			// before killing anything log the state
 			// log current state :
 			
-			final StringBuffer log = new StringBuffer();
+			final StringBuilder log = new StringBuilder();
 			log.append("status count of [unassigned,watched,all] processes : ["+getNewProcessMap().size()+","+getProcessMap().size()+","+getProcessList().size()+"]");
 			if (logger.isDebugEnabled()) {
 				log.append("\nwatched processes : ["+getProcessMap().size()+"]\n");

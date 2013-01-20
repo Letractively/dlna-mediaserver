@@ -1,23 +1,5 @@
 <Context path="/mediaserver" docBase="/mnt/software/runtime/webapps/mediaserver-1.1.1.war">
      
-    <Environment
-        name="mediaserver.webapp.name"
-        override="false"
-        type="java.lang.String"
-        value="mediaserver" />
-
-    <Environment
-        name="mediaserver.server.hostname"
-        override="false"
-        type="java.lang.String"
-        value="192.168.101.227" />
-        
-    <Environment
-        name="mediaserver.server.port"
-        override="false"
-        type="java.lang.Integer"
-        value="9090" />        
-
 <!-- 	H2 -->
 <!-- 
 	<Environment 
