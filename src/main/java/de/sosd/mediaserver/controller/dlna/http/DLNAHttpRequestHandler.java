@@ -13,20 +13,18 @@ import org.springframework.web.servlet.mvc.Controller;
 @Component
 public class DLNAHttpRequestHandler implements Controller {
 
+    private final static Log logger = LogFactory
+                                            .getLog(DLNAHttpRequestHandler.class);
 
-	private final static Log logger = LogFactory
-			.getLog(DLNAHttpRequestHandler.class);
-	
-	@Override
-	public ModelAndView handleRequest(final HttpServletRequest request,
-			final HttpServletResponse response) throws Exception {
-		
-		final String header = request.getHeader("Callback");
-		logger.debug("callback accepted : " + header);
-		
-		response.setStatus(HttpStatus.OK.value());
-		return null;
-	}
+    @Override
+    public ModelAndView handleRequest(final HttpServletRequest request,
+            final HttpServletResponse response) throws Exception {
 
+        final String header = request.getHeader("Callback");
+        logger.debug("callback accepted : " + header);
+
+        response.setStatus(HttpStatus.OK.value());
+        return null;
+    }
 
 }

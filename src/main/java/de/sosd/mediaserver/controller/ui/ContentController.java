@@ -10,13 +10,14 @@ import org.springframework.web.servlet.view.RedirectView;
 @Controller
 @RequestMapping("content/*")
 public class ContentController {
-	
-	private static final Logger logger = LoggerFactory.getLogger(ContentController.class);
-	
-	@RequestMapping(value = "show", method = RequestMethod.GET)
-	public RedirectView content() {
-		logger.debug("content");
-		return new RedirectView("/manager", true);
-	}
-	
+
+    private static final Logger logger = LoggerFactory
+                                               .getLogger(ContentController.class);
+
+    @RequestMapping(value = "show", method = RequestMethod.GET)
+    public RedirectView content() {
+        logger.debug("content");
+        return new RedirectView("/manager", true);
+    }
+
 }

@@ -18,28 +18,31 @@ import de.sosd.mediaserver.service.MediaserverConfiguration;
 @Configurable
 public class ThumbnailPurger {
 
-	@Autowired
-	private MediaserverConfiguration cfg;
-	
-	private final static Log logger = LogFactory.getLog(ThumbnailPurger.class);
-	
-	@PostRemove
-	public void onDelete(final DidlDomain domain) {
-		final ThumbnailDomain thumbnail = domain.getThumbnail();
-		if (thumbnail != null) {
-			final File previews = new File(this.cfg.getPreviews());
-			final File file = new File(previews, domain.getId() + "." + thumbnail.getType());
-			
-			if (file.exists()) {
-				try {
-					FileUtils.forceDelete(file);
-				} catch (final IOException e) {
-					logger.error("could not remove thumbnail-file " + file.getAbsolutePath(),e);
-				}
-			}
-		}
-		
-		
-	}
-		
+    @Autowired
+    private MediaserverConfiguration cfg;
+
+    private final static Log         logger = LogFactory
+                                                    .getLog(ThumbnailPurger.class);
+
+    @PostRemove
+    public void onDelete(final DidlDomain domain) {
+        final ThumbnailDomain thumbnail = domain.getThumbnail();
+        if (thumbnail != null) {
+            final File previews = new File(this.cfg.getPreviews());
+            final File file = new File(previews, domain.getId() + "."
+                    + thumbnail.getType());
+
+            if (file.exists()) {
+                try {
+                    FileUtils.forceDelete(file);
+                } catch (final IOException e) {
+                    logger.error(
+                            "could not remove thumbnail-file "
+                                    + file.getAbsolutePath(), e);
+                }
+            }
+        }
+
+    }
+
 }

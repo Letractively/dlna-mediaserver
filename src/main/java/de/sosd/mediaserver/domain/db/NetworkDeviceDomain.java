@@ -14,175 +14,184 @@ import javax.persistence.Table;
 
 import de.sosd.mediaserver.bean.NetworkDeviceBean;
 
-@Entity(name="network")
-@Table(name="network")
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@Entity(name = "network")
+@Table(name = "network")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class NetworkDeviceDomain implements Serializable {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = -3083801779204348634L;
+    private static final long serialVersionUID = -3083801779204348634L;
 
-	@ManyToOne(targetEntity=SystemDomain.class, fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "system")
-	private SystemDomain system;
-	
-	@Column(name = "name", length = 36, nullable = false)
-	private String interfaceName;
-	@Column(name = "display_name", length = 255, nullable = false)
-	private String displayName;
-	@Column(name = "host_name", length = 255, nullable = false)
-	private String hostName;
-	@Column(name = "ip", length = 15, nullable = false)
-	private String ipAddress;
-	@Id
-	@Column(name = "mac_address", length = 17)
-	private String macAddress;
-	@Column(name = "activated", nullable = false)
-	private boolean activated;
-	@Column(name = "present", nullable = false)
-	private boolean present;
-	@Column(name = "loopback", nullable = false)
-	private boolean loopback;
+    @ManyToOne(targetEntity = SystemDomain.class, fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "system")
+    private SystemDomain      system;
 
-	
-	public NetworkDeviceDomain() {}
-	
-	public NetworkDeviceDomain(NetworkDeviceBean ndb, SystemDomain system) {
-		this.system = system;
-		updateFrom(ndb);
-	}
+    @Column(name = "name", length = 36, nullable = false)
+    private String            interfaceName;
+    @Column(name = "display_name", length = 255, nullable = false)
+    private String            displayName;
+    @Column(name = "host_name", length = 255, nullable = false)
+    private String            hostName;
+    @Column(name = "ip", length = 15, nullable = false)
+    private String            ipAddress;
+    @Id
+    @Column(name = "mac_address", length = 17)
+    private String            macAddress;
+    @Column(name = "activated", nullable = false)
+    private boolean           activated;
+    @Column(name = "present", nullable = false)
+    private boolean           present;
+    @Column(name = "loopback", nullable = false)
+    private boolean           loopback;
 
-	public void updateFrom(NetworkDeviceBean ndb) {
-		setInterfaceName(ndb.getInterfaceName());
-		setHostName(ndb.getHostName());
-		setDisplayName(ndb.getDisplayName());
-		setIpAddress(ndb.getIpAddress());
-		setMacAddress(ndb.getMacAddress());
-		setActivated(ndb.isActivated());
-		setPresent(ndb.isPresent());
-		setLoopback(ndb.isLoopback());
-	}
+    public NetworkDeviceDomain() {
+    }
 
-	/**
-	 * @return the hostName
-	 */
-	public String getHostName() {
-		return hostName;
-	}
+    public NetworkDeviceDomain(final NetworkDeviceBean ndb,
+            final SystemDomain system) {
+        this.system = system;
+        updateFrom(ndb);
+    }
 
-	/**
-	 * @param hostName the hostName to set
-	 */
-	public void setHostName(String hostName) {
-		this.hostName = hostName;
-	}
+    public void updateFrom(final NetworkDeviceBean ndb) {
+        setInterfaceName(ndb.getInterfaceName());
+        setHostName(ndb.getHostName());
+        setDisplayName(ndb.getDisplayName());
+        setIpAddress(ndb.getIpAddress());
+        setMacAddress(ndb.getMacAddress());
+        setActivated(ndb.isActivated());
+        setPresent(ndb.isPresent());
+        setLoopback(ndb.isLoopback());
+    }
 
-	/**
-	 * @return the interfaceName
-	 */
-	public String getInterfaceName() {
-		return interfaceName;
-	}
+    /**
+     * @return the hostName
+     */
+    public String getHostName() {
+        return this.hostName;
+    }
 
-	/**
-	 * @param interfaceName the interfaceName to set
-	 */
-	public void setInterfaceName(String interfaceName) {
-		this.interfaceName = interfaceName;
-	}
+    /**
+     * @param hostName
+     *            the hostName to set
+     */
+    public void setHostName(final String hostName) {
+        this.hostName = hostName;
+    }
 
-	/**
-	 * @return the displayName
-	 */
-	public String getDisplayName() {
-		return displayName;
-	}
+    /**
+     * @return the interfaceName
+     */
+    public String getInterfaceName() {
+        return this.interfaceName;
+    }
 
-	/**
-	 * @param displayName the displayName to set
-	 */
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
-	}
+    /**
+     * @param interfaceName
+     *            the interfaceName to set
+     */
+    public void setInterfaceName(final String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
 
-	/**
-	 * @return the ipAddress
-	 */
-	public String getIpAddress() {
-		return ipAddress;
-	}
+    /**
+     * @return the displayName
+     */
+    public String getDisplayName() {
+        return this.displayName;
+    }
 
-	/**
-	 * @param ipAddress the ipAddress to set
-	 */
-	public void setIpAddress(String ipAddress) {
-		this.ipAddress = ipAddress;
-	}
+    /**
+     * @param displayName
+     *            the displayName to set
+     */
+    public void setDisplayName(final String displayName) {
+        this.displayName = displayName;
+    }
 
-	/**
-	 * @return the macAddress
-	 */
-	public String getMacAddress() {
-		return macAddress;
-	}
+    /**
+     * @return the ipAddress
+     */
+    public String getIpAddress() {
+        return this.ipAddress;
+    }
 
-	/**
-	 * @param macAddress the macAddress to set
-	 */
-	public void setMacAddress(String macAddress) {
-		this.macAddress = macAddress;
-	}
+    /**
+     * @param ipAddress
+     *            the ipAddress to set
+     */
+    public void setIpAddress(final String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
 
-	/**
-	 * @return the activated
-	 */
-	public boolean isActivated() {
-		return activated;
-	}
+    /**
+     * @return the macAddress
+     */
+    public String getMacAddress() {
+        return this.macAddress;
+    }
 
-	/**
-	 * @param activated the activated to set
-	 */
-	public void setActivated(boolean activated) {
-		this.activated = activated;
-	}
+    /**
+     * @param macAddress
+     *            the macAddress to set
+     */
+    public void setMacAddress(final String macAddress) {
+        this.macAddress = macAddress;
+    }
 
-	/**
-	 * @return the present
-	 */
-	public boolean isPresent() {
-		return present;
-	}
+    /**
+     * @return the activated
+     */
+    public boolean isActivated() {
+        return this.activated;
+    }
 
-	/**
-	 * @param present the present to set
-	 */
-	public void setPresent(boolean present) {
-		this.present = present;
-	}
+    /**
+     * @param activated
+     *            the activated to set
+     */
+    public void setActivated(final boolean activated) {
+        this.activated = activated;
+    }
 
-	/**
-	 * @return the system
-	 */
-	public SystemDomain getSystem() {
-		return system;
-	}
+    /**
+     * @return the present
+     */
+    public boolean isPresent() {
+        return this.present;
+    }
 
-	/**
-	 * @param system the system to set
-	 */
-	public void setSystem(SystemDomain system) {
-		this.system = system;
-	}
+    /**
+     * @param present
+     *            the present to set
+     */
+    public void setPresent(final boolean present) {
+        this.present = present;
+    }
 
-	public void setLoopback(boolean loopback) {
-		this.loopback = loopback;
-	}
-	
-	public boolean isLoopback() {
-		return loopback;
-	}
-	
+    /**
+     * @return the system
+     */
+    public SystemDomain getSystem() {
+        return this.system;
+    }
+
+    /**
+     * @param system
+     *            the system to set
+     */
+    public void setSystem(final SystemDomain system) {
+        this.system = system;
+    }
+
+    public void setLoopback(final boolean loopback) {
+        this.loopback = loopback;
+    }
+
+    public boolean isLoopback() {
+        return this.loopback;
+    }
+
 }

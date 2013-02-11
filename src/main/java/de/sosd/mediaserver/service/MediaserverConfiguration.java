@@ -15,135 +15,137 @@ import de.sosd.mediaserver.domain.db.SystemDomain;
 @Service
 public class MediaserverConfiguration {
 
-	private final static Log logger = LogFactory.getLog(MediaserverConfiguration.class);
-	
-	@Autowired
-	private SystemDao systemDao;
-	
-	private String protocol = "HTTP";
-	private String address = "localhost";
-	private int port = 8080;
-	private String webappName = "mediaserver";
-	
-	private String usn = null;
+    private final static Log logger     = LogFactory
+                                                .getLog(MediaserverConfiguration.class);
 
-	public String getServerName() {
-		final SystemDomain systemProperties = this.systemDao.getSystem(getUSN());
-		return systemProperties.getName();
-	}
+    @Autowired
+    private SystemDao        systemDao;
 
-	public String getUSN() {
-		return usn;
-	}
+    private String           protocol   = "HTTP";
+    private String           address    = "localhost";
+    private int              port       = 8080;
+    private String           webappName = "mediaserver";
 
-	/**
-	 * @return the webappName
-	 */
-	private String getWebappName() {
-		return this.webappName;
-	}
+    private String           usn        = null;
 
-	/**
-	 * @return the port
-	 */
-	private int getPort() {
-		return this.port;
-	}
+    public String getServerName() {
+        final SystemDomain systemProperties = this.systemDao
+                .getSystem(getUSN());
+        return systemProperties.getName();
+    }
 
-	/**
-	 * @param port the port to set
-	 */
-	@Transactional
-	public void updateWebappConfiguration(final String protocol,final  String address,final  int port,final  String webappName) {
-		this.port = port;
-		this.webappName = webappName;
-		this.address = address;
-		this.protocol = protocol;
-		SystemDomain system = systemDao.getSystem(getUSN());
-		system.setHostname(getAddress());
-		system.setPort(getPort());
-		system.setWebappName(getWebappName());
-		system.setProtocol(getProtocol());
-		
-		systemDao.store(system);
-	}
-	
-	/**
-	 * @param port the port to set
-	 */
-	public void loacWebappConfiguration() {
-		SystemDomain system = systemDao.getSystem(getUSN());
-		this.address  = system.getHostname();
-		this.port = system.getPort();
-		this.webappName = system.getWebappName();
-		this.protocol = system.getProtocol();
-	}
+    public String getUSN() {
+        return this.usn;
+    }
 
-	public String getMPlayerPath() {
-		final SystemDomain systemProperties = this.systemDao.getSystem(getUSN());
-		return systemProperties.getMplayerPath();
-	}
+    /**
+     * @return the webappName
+     */
+    private String getWebappName() {
+        return this.webappName;
+    }
 
-	public String getPreviews() {
-		final SystemDomain systemProperties = this.systemDao.getSystem(getUSN());
-		return systemProperties.getPreviewCache();
-	}
+    /**
+     * @return the port
+     */
+    private int getPort() {
+        return this.port;
+    }
 
-	public WebappLocationBean getWebappLocation(final String protocol,final  String address,final  int port,final  String webappName) {
-		try {
-			return new WebappLocationBean(protocol, address, port, webappName);
-		} catch (MalformedURLException e) {
-			return getDefaultWebappLocation();
-		}
-	}
+    /**
+     * @param port
+     *            the port to set
+     */
+    @Transactional
+    public void updateWebappConfiguration(final String protocol,
+            final String address, final int port, final String webappName) {
+        this.port = port;
+        this.webappName = webappName;
+        this.address = address;
+        this.protocol = protocol;
+        final SystemDomain system = this.systemDao.getSystem(getUSN());
+        system.setHostname(getAddress());
+        system.setPort(getPort());
+        system.setWebappName(getWebappName());
+        system.setProtocol(getProtocol());
 
-	private WebappLocationBean getDefaultWebappLocation() {
-		try {
-			return new WebappLocationBean(getProtocol(), getAddress(), getPort(), getWebappName());
-		} catch (MalformedURLException e) {
-			logger.error("default url is malformed : " + getProtocol() + "://" + getAddress() + ":" + getPort() + "/" + getWebappName());
-		}
-		return null;
-	}
+        this.systemDao.store(system);
+    }
 
-	public WebappLocationBean getWebappLocation(String address) {
-		try {
-			return new WebappLocationBean(getProtocol(), address, getPort(), getWebappName());
-		} catch (MalformedURLException e) {
-			logger.error("default url is malformed : " + getProtocol() + "://" + address + ":" + getPort() + "/" + getWebappName());
-		}
-		return null;
+    /**
+     * @param port
+     *            the port to set
+     */
+    public void loacWebappConfiguration() {
+        final SystemDomain system = this.systemDao.getSystem(getUSN());
+        this.address = system.getHostname();
+        this.port = system.getPort();
+        this.webappName = system.getWebappName();
+        this.protocol = system.getProtocol();
+    }
 
-	}
-	
-	
-	private String getAddress() {
-		return address;
-	}
+    public String getMPlayerPath() {
+        final SystemDomain systemProperties = this.systemDao
+                .getSystem(getUSN());
+        return systemProperties.getMplayerPath();
+    }
 
+    public String getPreviews() {
+        final SystemDomain systemProperties = this.systemDao
+                .getSystem(getUSN());
+        return systemProperties.getPreviewCache();
+    }
 
-	private String getProtocol() {
-		return protocol;
-	}
+    public WebappLocationBean getWebappLocation(final String protocol,
+            final String address, final int port, final String webappName) {
+        try {
+            return new WebappLocationBean(protocol, address, port, webappName);
+        } catch (final MalformedURLException e) {
+            return getDefaultWebappLocation();
+        }
+    }
 
+    private WebappLocationBean getDefaultWebappLocation() {
+        try {
+            return new WebappLocationBean(getProtocol(), getAddress(),
+                    getPort(), getWebappName());
+        } catch (final MalformedURLException e) {
+            logger.error("default url is malformed : " + getProtocol() + "://"
+                    + getAddress() + ":" + getPort() + "/" + getWebappName());
+        }
+        return null;
+    }
 
-	public void setUSN(String usn) {
-		this.usn = usn;
-	}
+    public WebappLocationBean getWebappLocation(final String address) {
+        try {
+            return new WebappLocationBean(getProtocol(), address, getPort(),
+                    getWebappName());
+        } catch (final MalformedURLException e) {
+            logger.error("default url is malformed : " + getProtocol() + "://"
+                    + address + ":" + getPort() + "/" + getWebappName());
+        }
+        return null;
 
+    }
 
-	public boolean isSystemAvailable() {
-		return getUSN() != null;
-	}
+    private String getAddress() {
+        return this.address;
+    }
 
+    private String getProtocol() {
+        return this.protocol;
+    }
 
-	public String getHostname() {
-		return getAddress();
-	}
+    public void setUSN(final String usn) {
+        this.usn = usn;
+    }
 
+    public boolean isSystemAvailable() {
+        return getUSN() != null;
+    }
 
-
-
-
+    public String getHostname() {
+        return getAddress();
+    }
 
 }

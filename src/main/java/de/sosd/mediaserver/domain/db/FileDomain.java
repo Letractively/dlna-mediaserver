@@ -22,191 +22,204 @@ import javax.persistence.TemporalType;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class FileDomain implements Serializable {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 101035226431209778L;
+    private static final long serialVersionUID = 101035226431209778L;
 
-	@Id
-	@Column(name = "id", length = 36)
-	private String id;
-	@Column(name = "name", length = 255, nullable = false)
-	private String name;
-	@Column(name = "path", length = 2048, nullable = false)
-	private String path;
-	@Column(name = "size", nullable = false)
-	private long size;
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "lastModified", nullable = false)
-	private Date lastModified;
-	@Column(name = "hidden", nullable = false)
-	private boolean hidden;	
-	@Column(name = "uuid", length = 36, nullable = true)
-	private String uuid;
-	
-	@ManyToOne(targetEntity = ScanFolderDomain.class, fetch = FetchType.LAZY)
-	private ScanFolderDomain parent;
+    @Id
+    @Column(name = "id", length = 36)
+    private String            id;
+    @Column(name = "name", length = 255, nullable = false)
+    private String            name;
+    @Column(name = "path", length = 2048, nullable = false)
+    private String            path;
+    @Column(name = "size", nullable = false)
+    private long              size;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "lastModified", nullable = false)
+    private Date              lastModified;
+    @Column(name = "hidden", nullable = false)
+    private boolean           hidden;
+    @Column(name = "uuid", length = 36, nullable = true)
+    private String            uuid;
 
-	@OneToOne(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "file")
-	private DidlDomain didl;
+    @ManyToOne(targetEntity = ScanFolderDomain.class, fetch = FetchType.LAZY)
+    private ScanFolderDomain  parent;
 
-	public FileDomain() {}
+    @OneToOne(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "file")
+    private DidlDomain        didl;
 
-	public FileDomain(final String id, final ScanFolderDomain parent, final File source) {
-		setId(id);
-		setParent(parent);
-		if (parent != null) {
-			getParent().getFiles().add(this);
-		}
-		setName(source.getName());
-		setPath(source.getAbsolutePath());
-		setLastModified(source.lastModified());
-		setSize(source.length());
-		setHidden(source.isHidden());
-		
-		this.parent = parent;	
-	}
+    public FileDomain() {
+    }
 
+    public FileDomain(final String id, final ScanFolderDomain parent,
+            final File source) {
+        setId(id);
+        setParent(parent);
+        if (parent != null) {
+            getParent().getFiles().add(this);
+        }
+        setName(source.getName());
+        setPath(source.getAbsolutePath());
+        setLastModified(source.lastModified());
+        setSize(source.length());
+        setHidden(source.isHidden());
 
-	public FileDomain(final String id, final File source) {
-		setId(id);
+        this.parent = parent;
+    }
 
-		setName(source.getName());
-		setPath(source.getAbsolutePath());
-		setLastModified(source.lastModified());
-		setSize(source.length());
-		setHidden(source.isHidden());
-	}
+    public FileDomain(final String id, final File source) {
+        setId(id);
 
-	public String getId() {
-		return this.id;
-	}
+        setName(source.getName());
+        setPath(source.getAbsolutePath());
+        setLastModified(source.lastModified());
+        setSize(source.length());
+        setHidden(source.isHidden());
+    }
 
-	public void setId(final String id) {
-		this.id = id;
-	}
-	
-	public String getUuid() {
-		return this.uuid;
-	}
-	
-	public void setUuid(final String uuid) {
-		this.uuid = uuid;
-	}
+    public String getId() {
+        return this.id;
+    }
 
-	public String getPath() {
-		return this.path;
-	}
+    public void setId(final String id) {
+        this.id = id;
+    }
 
-	public void setPath(final String absolutePath) {
-		this.path = absolutePath;
-	}
+    public String getUuid() {
+        return this.uuid;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public void setUuid(final String uuid) {
+        this.uuid = uuid;
+    }
 
-	public void setName(final String name) {
-		this.name = name;
-	}
+    public String getPath() {
+        return this.path;
+    }
 
-	public ScanFolderDomain getParent() {
-		return this.parent;
-	}
+    public void setPath(final String absolutePath) {
+        this.path = absolutePath;
+    }
 
-	public void setParent(final ScanFolderDomain parent) {
-		this.parent = parent;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public void setDidl(final DidlDomain didl) {
-		this.didl = didl;
-	}
-	
-	public DidlDomain getDidl() {
-		return this.didl;
-	}
+    public void setName(final String name) {
+        this.name = name;
+    }
 
-	public long getSize() {
-		return this.size;
-	}
+    public ScanFolderDomain getParent() {
+        return this.parent;
+    }
 
-	public void setSize(final long size) {
-		this.size = size;
-	}
+    public void setParent(final ScanFolderDomain parent) {
+        this.parent = parent;
+    }
 
-	public Date getLastModified() {
-		return this.lastModified;
-	}
-	
-	public void setLastModified(final long ts) {
-		setLastModified(new Date(ts));	
-	}
-	
-	public void setLastModified(final Date lastModified) {
-		this.lastModified = lastModified;
-	}
+    public void setDidl(final DidlDomain didl) {
+        this.didl = didl;
+    }
 
-	public boolean isHidden() {
-		return this.hidden;
-	}
+    public DidlDomain getDidl() {
+        return this.didl;
+    }
 
-	public void setHidden(final boolean hidden) {
-		this.hidden = hidden;
-	}
+    public long getSize() {
+        return this.size;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		return result;
-	}
+    public void setSize(final long size) {
+        this.size = size;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		FileDomain other = (FileDomain) obj;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		return true;
-	}
+    public Date getLastModified() {
+        return this.lastModified;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "FileDomain ["
-				+ (id != null ? "id=" + id + ", " : "")
-				+ (name != null ? "name=" + name + ", " : "")
-				+ (path != null ? "path=" + path + ", " : "")
-				+ "size="
-				+ size
-				+ ", "
-				+ (lastModified != null ? "lastModified=" + lastModified + ", "
-						: "") + "hidden=" + hidden + ", "
-				+ (uuid != null ? "uuid=" + uuid + ", " : "")
-				+ (parent != null ? "parent=" + parent + ", " : "")
-				+ (didl != null ? "didl=" + didl : "") + "]";
-	}
+    public void setLastModified(final long ts) {
+        setLastModified(new Date(ts));
+    }
 
-	/*********** DIDL-OPTIONS **************/
+    public void setLastModified(final Date lastModified) {
+        this.lastModified = lastModified;
+    }
 
-	// @XmlAttribute(name = "refID")
-	// protected String refID;
+    public boolean isHidden() {
+        return this.hidden;
+    }
+
+    public void setHidden(final boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (this.id == null ? 0 : this.id.hashCode());
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FileDomain other = (FileDomain) obj;
+        if (this.id == null) {
+            if (other.id != null) {
+                return false;
+            }
+        } else if (!this.id.equals(other.id)) {
+            return false;
+        }
+        return true;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "FileDomain ["
+                + (this.id != null ? "id=" + this.id + ", " : "")
+                + (this.name != null ? "name=" + this.name + ", " : "")
+                + (this.path != null ? "path=" + this.path + ", " : "")
+                + "size="
+                + this.size
+                + ", "
+                + (this.lastModified != null ? "lastModified="
+                        + this.lastModified + ", "
+                        : "") + "hidden=" + this.hidden + ", "
+                + (this.uuid != null ? "uuid=" + this.uuid + ", " : "")
+                + (this.parent != null ? "parent=" + this.parent + ", " : "")
+                + (this.didl != null ? "didl=" + this.didl : "") + "]";
+    }
+
+    /*********** DIDL-OPTIONS **************/
+
+    // @XmlAttribute(name = "refID")
+    // protected String refID;
 
 }

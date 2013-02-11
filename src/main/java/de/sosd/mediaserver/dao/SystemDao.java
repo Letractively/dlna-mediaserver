@@ -17,60 +17,67 @@ import de.sosd.mediaserver.domain.db.SystemDomain;
 @Service
 public class SystemDao {
 
-	@PersistenceContext(name = "mediaserver")
-	protected EntityManager manager;
-	
-	@Transactional(propagation = Propagation.SUPPORTS)
-	public SystemDomain getSystem(String usn) {
-		return manager.find(SystemDomain.class, usn);
-	}
+    @PersistenceContext(name = "mediaserver")
+    protected EntityManager manager;
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void store(final SystemDomain system) {
-		manager.persist(system);
-	}
-	
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void update(final SystemDomain system, final List<Object> itemsToPurge) {
-		for (final Object item : itemsToPurge) {
-			this.manager.remove(item);
-		}
-		store(system);
-	}	
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public SystemDomain getSystem(final String usn) {
+        return this.manager.find(SystemDomain.class, usn);
+    }
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public String initSystem() {
-		final SystemDomain system = new SystemDomain();
-		system.setUsn(UUID.randomUUID().toString());
-		system.setUpdateId(1);
-		system.setLastDataChange(new Date());
-		system.setDidlRoot(new DidlDomain(system));
-		
-		store(system);
-		return system.getUsn();
-	}
-	
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void setMetaInfoGenerationRunning(final boolean value, final String usn) {
-		final SystemDomain systemProperties = getSystem(usn);
-		systemProperties.setMetaInfoGenerationRunning(value);
-		manager.persist(systemProperties);
-	}
-	
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void setThumbnailGenerationRunning(final boolean value, final String usn) {
-		final SystemDomain systemProperties = getSystem(usn);
-		systemProperties.setThumbnailGenerationRunning(value);
-		manager.persist(systemProperties);	
-	}
-	
-	@Transactional(propagation = Propagation.SUPPORTS)
-	public int getSystemUpdateId(String usn) {
-		return (Integer) manager.createQuery("select system.updateId from System system where system.usn = ?").setParameter(1, usn).getSingleResult();
-	}
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void store(final SystemDomain system) {
+        this.manager.persist(system);
+    }
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void setSystemOnline(final boolean value, final String usn) {
-		manager.createQuery("update System set online = ? where usn = ?").setParameter(1, value).setParameter(2, usn).executeUpdate();
-	}
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void update(final SystemDomain system,
+            final List<Object> itemsToPurge) {
+        for (final Object item : itemsToPurge) {
+            this.manager.remove(item);
+        }
+        store(system);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String initSystem() {
+        final SystemDomain system = new SystemDomain();
+        system.setUsn(UUID.randomUUID().toString());
+        system.setUpdateId(1);
+        system.setLastDataChange(new Date());
+        system.setDidlRoot(new DidlDomain(system));
+
+        store(system);
+        return system.getUsn();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void setMetaInfoGenerationRunning(final boolean value,
+            final String usn) {
+        final SystemDomain systemProperties = getSystem(usn);
+        systemProperties.setMetaInfoGenerationRunning(value);
+        this.manager.persist(systemProperties);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void setThumbnailGenerationRunning(final boolean value,
+            final String usn) {
+        final SystemDomain systemProperties = getSystem(usn);
+        systemProperties.setThumbnailGenerationRunning(value);
+        this.manager.persist(systemProperties);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public int getSystemUpdateId(final String usn) {
+        return (Integer) this.manager
+                .createQuery(
+                        "select system.updateId from System system where system.usn = ?")
+                .setParameter(1, usn).getSingleResult();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void setSystemOnline(final boolean value, final String usn) {
+        this.manager.createQuery("update System set online = ? where usn = ?")
+                .setParameter(1, value).setParameter(2, usn).executeUpdate();
+    }
 }

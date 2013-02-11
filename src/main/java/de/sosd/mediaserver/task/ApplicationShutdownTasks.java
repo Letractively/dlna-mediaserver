@@ -13,30 +13,30 @@ import de.sosd.mediaserver.service.MediaserverConfiguration;
 import de.sosd.mediaserver.service.dlna.UPNPNetwork;
 
 @Service
-public class ApplicationShutdownTasks implements ApplicationListener<ContextClosedEvent> {
+public class ApplicationShutdownTasks implements
+        ApplicationListener<ContextClosedEvent> {
 
-	@Autowired
-	private SystemDao systemDao;
-	
-	@Autowired
-	private UPNPNetwork upnp;
-	
-	@Autowired
-	private MediaserverConfiguration cfg;
-	
-	@Override
-	public void onApplicationEvent(final ContextClosedEvent event) {
-		setSystemOffline();
-	}
-	
+    @Autowired
+    private SystemDao                systemDao;
 
-	@Transactional(propagation=Propagation.REQUIRED)
-	private void setSystemOffline() {
-		this.upnp.sendByeBye();
-		this.upnp.stopListening();
-		final SystemDomain system = this.systemDao.getSystem(cfg.getUSN());
-		system.setOnline(false);
-		this.systemDao.store(system);
-	}
+    @Autowired
+    private UPNPNetwork              upnp;
+
+    @Autowired
+    private MediaserverConfiguration cfg;
+
+    @Override
+    public void onApplicationEvent(final ContextClosedEvent event) {
+        setSystemOffline();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    private void setSystemOffline() {
+        this.upnp.sendByeBye();
+        this.upnp.stopListening();
+        final SystemDomain system = this.systemDao.getSystem(this.cfg.getUSN());
+        system.setOnline(false);
+        this.systemDao.store(system);
+    }
 
 }

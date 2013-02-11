@@ -24,347 +24,369 @@ import javax.persistence.TemporalType;
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class SystemDomain implements Serializable {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = 4685441126356442627L;
+    private static final long               serialVersionUID           = 4685441126356442627L;
 
-	@OneToOne(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name="didl_root")
-	private DidlDomain didlRoot;
-	
-	@Column(name = "file_count", nullable = false)
-	private int fileCount;
+    @OneToOne(targetEntity = DidlDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "didl_root")
+    private DidlDomain                      didlRoot;
 
-	// some stats
-	@Column(name = "folder_count", nullable = false)
-	private int folderCount;
+    @Column(name = "file_count", nullable = false)
+    private int                             fileCount;
 
-	@Column(name = "hostname", nullable = false)
-	private String hostname = "localhost";
+    // some stats
+    @Column(name = "folder_count", nullable = false)
+    private int                             folderCount;
 
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "last_change", nullable = false)
-	private Date lastDataChange = new Date();
+    @Column(name = "hostname", nullable = false)
+    private String                          hostname                   = "localhost";
 
-	@Column(name = "mencoder")
-	private String mencoderPath;
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "last_change", nullable = false)
+    private Date                            lastDataChange             = new Date();
 
-	@Column(name = "meta_running", nullable = true)
-	private Boolean metaInfoGenerationRunning = false;
+    @Column(name = "mencoder")
+    private String                          mencoderPath;
 
-	@Column(name = "mplayer")
-	private String mplayerPath;
-	
-	@Column(name = "name", nullable = false)
-	private String name = "Mediaserver";
+    @Column(name = "meta_running", nullable = true)
+    private Boolean                         metaInfoGenerationRunning  = false;
 
-	@OneToMany(targetEntity = NetworkDeviceDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "system")
-	private final List<NetworkDeviceDomain> networkDevices = new ArrayList<NetworkDeviceDomain>(5);
-	
-	@Column(name = "online", nullable = false)
-	private boolean online = false;
-	
-	@Column(name = "content_size", nullable = false)
-	private long overallSize;
-	@Column(name = "port", nullable = false)
-	private int port = 8080;
+    @Column(name = "mplayer")
+    private String                          mplayerPath;
 
-	@Column(name = "previews")
-	private String previewCache;
+    @Column(name = "name", nullable = false)
+    private String                          name                       = "Mediaserver";
 
-	@Column(name = "protocol", nullable = false)
-	private String protocol = "http";
+    @OneToMany(targetEntity = NetworkDeviceDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "system")
+    private final List<NetworkDeviceDomain> networkDevices             = new ArrayList<NetworkDeviceDomain>(
+                                                                               5);
 
-	@OneToMany(targetEntity = ScanFolderDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "system")
-	private final List<ScanFolderDomain> scanFolder = new ArrayList<ScanFolderDomain>(5);
+    @Column(name = "online", nullable = false)
+    private boolean                         online                     = false;
 
-	@Column(name = "thumb_running", nullable = true)
-	private Boolean thumbnailGenerationRunning = false;
+    @Column(name = "content_size", nullable = false)
+    private long                            overallSize;
+    @Column(name = "port", nullable = false)
+    private int                             port                       = 8080;
 
-	@Column(name = "update_id", nullable = false)
-	private int updateId;
+    @Column(name = "previews")
+    private String                          previewCache;
 
-	@Id
-	@Column(name = "usn", length = 36)
-	private String usn;
+    @Column(name = "protocol", nullable = false)
+    private String                          protocol                   = "http";
 
-	@Column(name = "webapp_name", nullable = false)
-	private String webappName = "/mediaserver";
+    @OneToMany(targetEntity = ScanFolderDomain.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "system")
+    private final List<ScanFolderDomain>    scanFolder                 = new ArrayList<ScanFolderDomain>(
+                                                                               5);
 
-	public void addFile(final long size) {
-		setFileCount(getFileCount() + 1);
-		setOverallSize(getOverallSize() + size);
-	}
+    @Column(name = "thumb_running", nullable = true)
+    private Boolean                         thumbnailGenerationRunning = false;
 
-	public void addFolder(DidlDomain didl) {
-		setFolderCount(getFolderCount() + 1);
-	}
+    @Column(name = "update_id", nullable = false)
+    private int                             updateId;
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		SystemDomain other = (SystemDomain) obj;
-		if (hostname == null) {
-			if (other.hostname != null)
-				return false;
-		} else if (!hostname.equals(other.hostname))
-			return false;
-		return true;
-	}
+    @Id
+    @Column(name = "usn", length = 36)
+    private String                          usn;
 
-	public DidlDomain getDidlRoot() {
-		return this.didlRoot;
-	}
+    @Column(name = "webapp_name", nullable = false)
+    private String                          webappName                 = "/mediaserver";
 
-	public int getFileCount() {
-		return this.fileCount;
-	}
-	
-	public int getFolderCount() {
-		return this.folderCount;
-	}
+    public void addFile(final long size) {
+        setFileCount(getFileCount() + 1);
+        setOverallSize(getOverallSize() + size);
+    }
 
-	public String getHostname() {
-		return this.hostname;
-	}
+    public void addFolder(final DidlDomain didl) {
+        setFolderCount(getFolderCount() + 1);
+    }
 
-	public Date getLastDataChange() {
-		return this.lastDataChange;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SystemDomain other = (SystemDomain) obj;
+        if (this.hostname == null) {
+            if (other.hostname != null) {
+                return false;
+            }
+        } else if (!this.hostname.equals(other.hostname)) {
+            return false;
+        }
+        return true;
+    }
 
-	public String getMencoderPath() {
-		return this.mencoderPath;
-	}
+    public DidlDomain getDidlRoot() {
+        return this.didlRoot;
+    }
 
-	public Boolean getMetaInfoGenerationRunning() {
-		return this.metaInfoGenerationRunning;
-	}
+    public int getFileCount() {
+        return this.fileCount;
+    }
 
-	public String getMplayerPath() {
-		return this.mplayerPath;
-	}
+    public int getFolderCount() {
+        return this.folderCount;
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public String getHostname() {
+        return this.hostname;
+    }
 
-	/**
-	 * @return the networkDevices
-	 */
-	public List<NetworkDeviceDomain> getNetworkDevices() {
-		return networkDevices;
-	}
+    public Date getLastDataChange() {
+        return this.lastDataChange;
+    }
 
-	public long getOverallSize() {
-		return this.overallSize;
-	}
+    public String getMencoderPath() {
+        return this.mencoderPath;
+    }
 
-	/**
-	 * @return the port
-	 */
-	public int getPort() {
-		return port;
-	}
+    public Boolean getMetaInfoGenerationRunning() {
+        return this.metaInfoGenerationRunning;
+    }
 
-	public String getPreviewCache() {
-		return this.previewCache;
-	}
+    public String getMplayerPath() {
+        return this.mplayerPath;
+    }
 
-	/**
-	 * @return the protocol
-	 */
-	public String getProtocol() {
-		return protocol;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public List<ScanFolderDomain> getScanFolder() {
-		return this.scanFolder;
-	}
+    /**
+     * @return the networkDevices
+     */
+    public List<NetworkDeviceDomain> getNetworkDevices() {
+        return this.networkDevices;
+    }
 
-	public Boolean getThumbnailGenerationRunning() {
-		return this.thumbnailGenerationRunning;
-	}
+    public long getOverallSize() {
+        return this.overallSize;
+    }
 
-	public int getUpdateId() {
-		return this.updateId;
-	}
+    /**
+     * @return the port
+     */
+    public int getPort() {
+        return this.port;
+    }
 
-	public String getUsn() {
-		return this.usn;
-	}
+    public String getPreviewCache() {
+        return this.previewCache;
+    }
 
-	/**
-	 * @return the webappName
-	 */
-	public String getWebappName() {
-		return webappName;
-	}
+    /**
+     * @return the protocol
+     */
+    public String getProtocol() {
+        return this.protocol;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((hostname == null) ? 0 : hostname.hashCode());
-		return result;
-	}
+    public List<ScanFolderDomain> getScanFolder() {
+        return this.scanFolder;
+    }
 
-	public void increaseUpdateId() {
-		setUpdateId( getUpdateId() + 1 );
-	}
+    public Boolean getThumbnailGenerationRunning() {
+        return this.thumbnailGenerationRunning;
+    }
 
-	public boolean isOnline() {
-		return this.online;
-	}
+    public int getUpdateId() {
+        return this.updateId;
+    }
 
-	public void removeFile(final long size) {
-		setFileCount(getFileCount() - 1);
-		setOverallSize(getOverallSize() - size);
-	}
+    public String getUsn() {
+        return this.usn;
+    }
 
-	public void removeFolder(DidlDomain didl) {
-		setFolderCount(getFolderCount() - 1);
-	}
+    /**
+     * @return the webappName
+     */
+    public String getWebappName() {
+        return this.webappName;
+    }
 
-	public void setDidlRoot(final DidlDomain didlRoot) {
-		this.didlRoot = didlRoot;
-		didlRoot.setSystem(this);
-		addFolder(didlRoot);
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + (this.hostname == null ? 0 : this.hostname.hashCode());
+        return result;
+    }
 
-	public void setFileCount(final int fileCount) {
-		this.fileCount = fileCount;
-	}
+    public void increaseUpdateId() {
+        setUpdateId(getUpdateId() + 1);
+    }
 
-	public void setFolderCount(final int folderCount) {
-		this.folderCount = folderCount;
-	}
+    public boolean isOnline() {
+        return this.online;
+    }
 
-	public void setHostname(final String hostname) {
-		this.hostname = hostname;
-	}
+    public void removeFile(final long size) {
+        setFileCount(getFileCount() - 1);
+        setOverallSize(getOverallSize() - size);
+    }
 
-	public void setLastDataChange(final Date lastDataChange) {
-		this.lastDataChange = lastDataChange;
-	}
+    public void removeFolder(final DidlDomain didl) {
+        setFolderCount(getFolderCount() - 1);
+    }
 
-	public void setMencoderPath(final String mencoderPath) {
-		this.mencoderPath = mencoderPath;
-	}
+    public void setDidlRoot(final DidlDomain didlRoot) {
+        this.didlRoot = didlRoot;
+        didlRoot.setSystem(this);
+        addFolder(didlRoot);
+    }
 
-	public void setMetaInfoGenerationRunning(final Boolean metaInfoGenerationRunning) {
-		this.metaInfoGenerationRunning = metaInfoGenerationRunning;
-	}
+    public void setFileCount(final int fileCount) {
+        this.fileCount = fileCount;
+    }
 
-	public void setMplayerPath(final String mplayerPath) {
-		this.mplayerPath = mplayerPath;
-	}
+    public void setFolderCount(final int folderCount) {
+        this.folderCount = folderCount;
+    }
 
-	public void setName(final String name) {
-		this.name = name;
-	}
+    public void setHostname(final String hostname) {
+        this.hostname = hostname;
+    }
 
-	public void setOnline(final boolean online) {
-		this.online = online;
-	}
+    public void setLastDataChange(final Date lastDataChange) {
+        this.lastDataChange = lastDataChange;
+    }
 
-	public void setOverallSize(final long size) {
-		this.overallSize = size;
-	}
+    public void setMencoderPath(final String mencoderPath) {
+        this.mencoderPath = mencoderPath;
+    }
 
-	/**
-	 * @param port the port to set
-	 */
-	public void setPort(int port) {
-		this.port = port;
-	}
+    public void setMetaInfoGenerationRunning(
+            final Boolean metaInfoGenerationRunning) {
+        this.metaInfoGenerationRunning = metaInfoGenerationRunning;
+    }
 
-	public void setPreviewCache(final String previewCache) {
-		this.previewCache = previewCache;
-	}
+    public void setMplayerPath(final String mplayerPath) {
+        this.mplayerPath = mplayerPath;
+    }
 
-	/**
-	 * @param protocol the protocol to set
-	 */
-	public void setProtocol(String protocol) {
-		this.protocol = protocol;
-	}
+    public void setName(final String name) {
+        this.name = name;
+    }
 
-	public void setThumbnailGenerationRunning(final Boolean thumbnailGenerationRunning) {
-		this.thumbnailGenerationRunning = thumbnailGenerationRunning;
-	}
+    public void setOnline(final boolean online) {
+        this.online = online;
+    }
 
-	public void setUpdateId(final int updateId) {
-		this.updateId = updateId;
-	}
+    public void setOverallSize(final long size) {
+        this.overallSize = size;
+    }
 
-	public void setUsn(final String usn) {
-		this.usn = usn;
-	}
-	
-	/**
-	 * @param webappName the webappName to set
-	 */
-	public void setWebappName(String webappName) {
-		this.webappName = webappName;
-	}
+    /**
+     * @param port
+     *            the port to set
+     */
+    public void setPort(final int port) {
+        this.port = port;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		final int maxLen = 10;
-		return "SystemDomain ["
-				+ (hostname != null ? "hostname=" + hostname + ", " : "")
-				+ (lastDataChange != null ? "lastDataChange=" + lastDataChange
-						+ ", " : "")
-				+ "folderCount="
-				+ folderCount
-				+ ", fileCount="
-				+ fileCount
-				+ ", overallSize="
-				+ overallSize
-				+ ", updateId="
-				+ updateId
-				+ ", "
-				+ (name != null ? "name=" + name + ", " : "")
-				+ (previewCache != null ? "previewCache=" + previewCache + ", "
-						: "")
-				+ (usn != null ? "usn=" + usn + ", " : "")
-				+ (mplayerPath != null ? "mplayerPath=" + mplayerPath + ", "
-						: "")
-				+ (mencoderPath != null ? "mencoderPath=" + mencoderPath + ", "
-						: "")
-				+ "online="
-				+ online
-				+ ", "
-				+ (metaInfoGenerationRunning != null ? "metaInfoGenerationRunning="
-						+ metaInfoGenerationRunning + ", "
-						: "")
-				+ (thumbnailGenerationRunning != null ? "thumbnailGenerationRunning="
-						+ thumbnailGenerationRunning + ", "
-						: "")
-				+ (scanFolder != null ? "scanFolder="
-						+ scanFolder.subList(0,
-								Math.min(scanFolder.size(), maxLen)) + ", "
-						: "")
-				+ (didlRoot != null ? "didlRoot=" + didlRoot : "") + "]";
-	}
+    public void setPreviewCache(final String previewCache) {
+        this.previewCache = previewCache;
+    }
 
+    /**
+     * @param protocol
+     *            the protocol to set
+     */
+    public void setProtocol(final String protocol) {
+        this.protocol = protocol;
+    }
 
-	
-	
+    public void setThumbnailGenerationRunning(
+            final Boolean thumbnailGenerationRunning) {
+        this.thumbnailGenerationRunning = thumbnailGenerationRunning;
+    }
+
+    public void setUpdateId(final int updateId) {
+        this.updateId = updateId;
+    }
+
+    public void setUsn(final String usn) {
+        this.usn = usn;
+    }
+
+    /**
+     * @param webappName
+     *            the webappName to set
+     */
+    public void setWebappName(final String webappName) {
+        this.webappName = webappName;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        final int maxLen = 10;
+        return "SystemDomain ["
+                + (this.hostname != null ? "hostname=" + this.hostname + ", "
+                        : "")
+                + (this.lastDataChange != null ? "lastDataChange="
+                        + this.lastDataChange
+                        + ", " : "")
+                + "folderCount="
+                + this.folderCount
+                + ", fileCount="
+                + this.fileCount
+                + ", overallSize="
+                + this.overallSize
+                + ", updateId="
+                + this.updateId
+                + ", "
+                + (this.name != null ? "name=" + this.name + ", " : "")
+                + (this.previewCache != null ? "previewCache="
+                        + this.previewCache + ", "
+                        : "")
+                + (this.usn != null ? "usn=" + this.usn + ", " : "")
+                + (this.mplayerPath != null ? "mplayerPath=" + this.mplayerPath
+                        + ", "
+                        : "")
+                + (this.mencoderPath != null ? "mencoderPath="
+                        + this.mencoderPath + ", "
+                        : "")
+                + "online="
+                + this.online
+                + ", "
+                + (this.metaInfoGenerationRunning != null ? "metaInfoGenerationRunning="
+                        + this.metaInfoGenerationRunning + ", "
+                        : "")
+                + (this.thumbnailGenerationRunning != null ? "thumbnailGenerationRunning="
+                        + this.thumbnailGenerationRunning + ", "
+                        : "")
+                + (this.scanFolder != null ? "scanFolder="
+                        + this.scanFolder.subList(0,
+                                Math.min(this.scanFolder.size(), maxLen))
+                        + ", "
+                        : "")
+                + (this.didlRoot != null ? "didlRoot=" + this.didlRoot : "")
+                + "]";
+    }
+
 }

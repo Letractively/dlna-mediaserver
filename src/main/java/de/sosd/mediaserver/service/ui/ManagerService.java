@@ -20,59 +20,62 @@ import de.sosd.mediaserver.service.MediaserverConfiguration;
 @Service
 public class ManagerService {
 
-	@Autowired
-	private SystemDao systemDao;
-	
-	@Autowired
-	private FilesystemDao fsDao;
-	
-	@Autowired
-	private FilesystemService fs;
-	
-	@Autowired
-	private MediaserverConfiguration cfg;
+    @Autowired
+    private SystemDao                systemDao;
 
-	public void addScanFolder(final String folderPath) {
-		this.fs.addScanDirectory(new File(folderPath));
-	}
+    @Autowired
+    private FilesystemDao            fsDao;
 
-	public void removeFolderById(final String folderId) {
-		this.fsDao.removeDirectory(folderId);
-	}
+    @Autowired
+    private FilesystemService        fs;
 
-	public List<FrontendFolderBean> loadScanFolders() {
-		return this.fsDao.getAllFrontendScanFolders();
-	}
+    @Autowired
+    private MediaserverConfiguration cfg;
 
-	public FrontendSettingsBean loadSettings() {
-		final SystemDomain sys = this.systemDao.getSystem(cfg.getUSN());
-		return new FrontendSettingsBean(sys.getName(), "", "", sys.getPreviewCache(), sys.getMplayerPath(), sys.getMencoderPath());
-	}
+    public void addScanFolder(final String folderPath) {
+        this.fs.addScanDirectory(new File(folderPath));
+    }
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	public void updateScanInterval(final String folderId, final int scanInterval) {
-		final ScanFolderDomain scfd = this.fsDao.getScanfolder(folderId);
-		if (scfd != null) {
-			scfd.setScanInterval(scanInterval);
-		}
-		this.fsDao.store(scfd);
-	}
+    public void removeFolderById(final String folderId) {
+        this.fsDao.removeDirectory(folderId);
+    }
 
-	@Transactional(propagation=Propagation.REQUIRED)
-	public void updateServerSettings(final String name, final String networkInterface,
-			final String previews, final String mplayer, final String mencoder) {
-		final SystemDomain sys = this.systemDao.getSystem(cfg.getUSN());
-		
-		if (!name.equals(sys.getName())) {
-			sys.setName(name);
-			sys.increaseUpdateId();
-		}
-		
-		sys.setPreviewCache(previews);
-		sys.setMplayerPath(mplayer);
-		sys.setMencoderPath(mencoder);
-		
-		this.systemDao.store(sys);
-	}
+    public List<FrontendFolderBean> loadScanFolders() {
+        return this.fsDao.getAllFrontendScanFolders();
+    }
+
+    public FrontendSettingsBean loadSettings() {
+        final SystemDomain sys = this.systemDao.getSystem(this.cfg.getUSN());
+        return new FrontendSettingsBean(sys.getName(), "", "",
+                sys.getPreviewCache(), sys.getMplayerPath(),
+                sys.getMencoderPath());
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updateScanInterval(final String folderId, final int scanInterval) {
+        final ScanFolderDomain scfd = this.fsDao.getScanfolder(folderId);
+        if (scfd != null) {
+            scfd.setScanInterval(scanInterval);
+        }
+        this.fsDao.store(scfd);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updateServerSettings(final String name,
+            final String networkInterface,
+            final String previews, final String mplayer, final String mencoder) {
+        final SystemDomain sys = this.systemDao.getSystem(this.cfg.getUSN());
+
+        if (!name.equals(sys.getName())) {
+            sys.setName(name);
+            sys.increaseUpdateId();
+        }
+
+        sys.setPreviewCache(previews);
+        sys.setMplayerPath(mplayer);
+        sys.setMencoderPath(mencoder);
+
+        this.systemDao.store(sys);
+    }
 
 }

@@ -4,45 +4,46 @@ import java.io.File;
 
 public class ScanFile {
 
-	private ScanFolder parent;
-	
-	private String id;
-	
-	private File f;
+    private final ScanFolder parent;
 
-	public ScanFile(ScanFolder dir, String id, File f) {
-		super();
-		this.parent = dir;
-		this.id = id;
-		this.f = f;
-	}
+    private final String     id;
 
-	public ScanFolder getParent() {
-		return parent;
-	}	
-	
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
+    private final File       f;
 
-	/**
-	 * @return the f
-	 */
-	public File getFile() {
-		return f;
-	}
+    public ScanFile(final ScanFolder dir, final String id, final File f) {
+        super();
+        this.parent = dir;
+        this.id = id;
+        this.f = f;
+    }
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "" + (f != null ? f.getAbsolutePath() : "") + " [" + id + "]";
-	}
-	
-	
-	
+    public ScanFolder getParent() {
+        return this.parent;
+    }
+
+    /**
+     * @return the id
+     */
+    public String getId() {
+        return this.id;
+    }
+
+    /**
+     * @return the f
+     */
+    public File getFile() {
+        return this.f;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "" + (this.f != null ? this.f.getAbsolutePath() : "") + " ["
+                + this.id + "]";
+    }
+
 }

@@ -1,6 +1,5 @@
 package de.sosd.mediaserver.domain.db;
 
-
 public enum ScanFolderState {
 
     IDLE("IDLE"),
@@ -9,7 +8,7 @@ public enum ScanFolderState {
 
     private final String value;
 
-	ScanFolderState(final String v) {
+    ScanFolderState(final String v) {
         this.value = v;
     }
 
@@ -18,7 +17,7 @@ public enum ScanFolderState {
     }
 
     public static ScanFolderState fromValue(final String v) {
-        for (final ScanFolderState c: ScanFolderState.values()) {
+        for (final ScanFolderState c : ScanFolderState.values()) {
             if (c.value.equals(v)) {
                 return c;
             }

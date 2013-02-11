@@ -15,70 +15,70 @@ import de.sosd.mediaserver.service.dlna.UPNPNetwork;
 
 @Service
 public class ScheduledTasks {
-	
-	@Autowired
-	private UPNPNetwork upnp;
-	
-	@Autowired
-	private FilesystemService fs;
-	
-	@Autowired
-	private MPlayerFileService mfs;
 
-	@Autowired
-	private ProcessWatchdogService pws;
-	
-	@Autowired
-	private NetworkDeviceService nds;
-	
-	@Autowired
-	private MediaserverConfiguration cfg;
-	
-	@Async
-	@Scheduled(fixedDelay=10000)
-	public void sendUPNPAlive() throws IOException {
-		if (cfg.isSystemAvailable()) {
-			this.upnp.sendAlive();
-		}
-	}
-	
-	@Scheduled(fixedDelay = 60000)
-	public void rescanFilesystemForChanges() {
-		if (cfg.isSystemAvailable()) {
-			this.fs.scanFilesystem();
-		}
-	}
-	
-	@Async
-	@Scheduled(fixedDelay = 60000)
-	public void rescanDatabaseForMissingMetaInfos() {
-		if (cfg.isSystemAvailable()) {
-			this.mfs.createMetaInfos();
-		}
-	}
-	
-	@Async
-	@Scheduled(fixedDelay = 60000)
-	public void rescanDatabaseForMissingThumbnails() {
-		if (cfg.isSystemAvailable()) {
-			this.mfs.createThumbnails();
-		}
-	}
+    @Autowired
+    private UPNPNetwork              upnp;
 
-	@Async
-	@Scheduled(fixedDelay = 5000)
-	public void checkProcesses() {
-		if (cfg.isSystemAvailable()) {
-			this.pws.checkProcesses();
-		}
-	}
-	
-	@Async
-	@Scheduled(fixedDelay=1000) 
-	public void checkNetworkDevices() {
-		if (cfg.isSystemAvailable()) {
-			nds.updateDeviceList();
-		}
-	}
-	
+    @Autowired
+    private FilesystemService        fs;
+
+    @Autowired
+    private MPlayerFileService       mfs;
+
+    @Autowired
+    private ProcessWatchdogService   pws;
+
+    @Autowired
+    private NetworkDeviceService     nds;
+
+    @Autowired
+    private MediaserverConfiguration cfg;
+
+    @Async
+    @Scheduled(fixedDelay = 10000)
+    public void sendUPNPAlive() throws IOException {
+        if (this.cfg.isSystemAvailable()) {
+            this.upnp.sendAlive();
+        }
+    }
+
+    @Scheduled(fixedDelay = 60000)
+    public void rescanFilesystemForChanges() {
+        if (this.cfg.isSystemAvailable()) {
+            this.fs.scanFilesystem();
+        }
+    }
+
+    @Async
+    @Scheduled(fixedDelay = 60000)
+    public void rescanDatabaseForMissingMetaInfos() {
+        if (this.cfg.isSystemAvailable()) {
+            this.mfs.createMetaInfos();
+        }
+    }
+
+    @Async
+    @Scheduled(fixedDelay = 60000)
+    public void rescanDatabaseForMissingThumbnails() {
+        if (this.cfg.isSystemAvailable()) {
+            this.mfs.createThumbnails();
+        }
+    }
+
+    @Async
+    @Scheduled(fixedDelay = 5000)
+    public void checkProcesses() {
+        if (this.cfg.isSystemAvailable()) {
+            this.pws.checkProcesses();
+        }
+    }
+
+    @Async
+    @Scheduled(fixedDelay = 1000)
+    public void checkNetworkDevices() {
+        if (this.cfg.isSystemAvailable()) {
+            this.nds.updateDeviceList();
+        }
+    }
+
 }

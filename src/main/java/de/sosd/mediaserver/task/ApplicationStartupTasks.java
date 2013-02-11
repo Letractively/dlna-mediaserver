@@ -27,83 +27,84 @@ import de.sosd.mediaserver.service.dlna.UPNPNetwork;
 
 @Service
 public class ApplicationStartupTasks implements
-		ApplicationListener<ContextRefreshedEvent> {
+        ApplicationListener<ContextRefreshedEvent> {
 
-	private final static Log logger = LogFactory
-			.getLog(ApplicationStartupTasks.class);
+    private final static Log         logger = LogFactory
+                                                    .getLog(ApplicationStartupTasks.class);
 
-	@Autowired
-	private SystemDao systemDao;
+    @Autowired
+    private SystemDao                systemDao;
 
-	@Autowired
-	private DidlDao didlDao;
+    @Autowired
+    private DidlDao                  didlDao;
 
-	@Autowired
-	private NetworkDeviceService networkService;
+    @Autowired
+    private NetworkDeviceService     networkService;
 
-	@Autowired
-	private MediaserverConfiguration cfg;
+    @Autowired
+    private MediaserverConfiguration cfg;
 
-	@Autowired
-	private UPNPNetwork upnp;
+    @Autowired
+    private UPNPNetwork              upnp;
 
-	@Override
-	public void onApplicationEvent(final ContextRefreshedEvent event) {
-		String usn = initializeSystem();
+    @Override
+    public void onApplicationEvent(final ContextRefreshedEvent event) {
+        final String usn = initializeSystem();
 
-		cfg.setUSN(usn);
-		cfg.loacWebappConfiguration();
-		DLNAContentDirectoryEventServlet.setUSN(cfg.getUSN());
-		setSystemOnline(usn);
-		applyDatabaseOptimizations();
-	}
+        this.cfg.setUSN(usn);
+        this.cfg.loacWebappConfiguration();
+        DLNAContentDirectoryEventServlet.setUSN(this.cfg.getUSN());
+        setSystemOnline(usn);
+        applyDatabaseOptimizations();
+    }
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	private String initializeSystem() {
+    @Transactional(propagation = Propagation.REQUIRED)
+    private String initializeSystem() {
 
-		final Set<String> result = networkService
-				.findPropableSystemsForNetworkDevices();
-		if (result.size() > 1) {
-			logger.error("found multiple systems for my network list, this should not happen!");
-		}
+        final Set<String> result = this.networkService
+                .findPropableSystemsForNetworkDevices();
+        if (result.size() > 1) {
+            logger.error("found multiple systems for my network list, this should not happen!");
+        }
 
-		if (!result.isEmpty()) {
-			return new ArrayList<String>(result).get(0);
-		}
+        if (!result.isEmpty()) {
+            return new ArrayList<String>(result).get(0);
+        }
 
-		// first time init
-		String usn = systemDao.initSystem();
-		cfg.setUSN(usn);
-		cfg.loacWebappConfiguration();
-		networkService.updateDeviceList();
+        // first time init
+        final String usn = this.systemDao.initSystem();
+        this.cfg.setUSN(usn);
+        this.cfg.loacWebappConfiguration();
+        this.networkService.updateDeviceList();
 
-		return cfg.getUSN();
-	}
+        return this.cfg.getUSN();
+    }
 
-	@Async
-	@Transactional(propagation = Propagation.REQUIRED)
-	private void applyDatabaseOptimizations() {
-		List<DidlDomain> list = didlDao.getAllDidlWithContentSizeNull();
+    @Async
+    @Transactional(propagation = Propagation.REQUIRED)
+    private void applyDatabaseOptimizations() {
+        final List<DidlDomain> list = this.didlDao
+                .getAllDidlWithContentSizeNull();
 
-		for (DidlDomain dd : list) {
-			dd.getContainerContentSize();
-			didlDao.store(dd);
-		}
-	}
+        for (final DidlDomain dd : list) {
+            dd.getContainerContentSize();
+            this.didlDao.store(dd);
+        }
+    }
 
-	@Transactional(propagation = Propagation.REQUIRED)
-	private void setSystemOnline(String usn) {
-		final SystemDomain system = this.systemDao.getSystem(usn);
-		system.setOnline(true);
-		for (final ScanFolderDomain sfd : system.getScanFolder()) {
-			if (!ScanFolderState.NOT_FOUND.equals(sfd.getScanState())) {
-				sfd.setScanState(ScanFolderState.IDLE);
-			}
-		}
-		system.setMetaInfoGenerationRunning(false);
-		system.setThumbnailGenerationRunning(false);
-		this.systemDao.store(system);
-		this.upnp.startListening();
-	}
+    @Transactional(propagation = Propagation.REQUIRED)
+    private void setSystemOnline(final String usn) {
+        final SystemDomain system = this.systemDao.getSystem(usn);
+        system.setOnline(true);
+        for (final ScanFolderDomain sfd : system.getScanFolder()) {
+            if (!ScanFolderState.NOT_FOUND.equals(sfd.getScanState())) {
+                sfd.setScanState(ScanFolderState.IDLE);
+            }
+        }
+        system.setMetaInfoGenerationRunning(false);
+        system.setThumbnailGenerationRunning(false);
+        this.systemDao.store(system);
+        this.upnp.startListening();
+    }
 
 }

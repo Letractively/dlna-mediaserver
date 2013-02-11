@@ -9,19 +9,16 @@ import org.springframework.web.servlet.handler.AbstractHandlerMapping;
 @Service
 public class DLNAHttpRequestHandlerMapping extends AbstractHandlerMapping {
 
-	@Autowired
-	private DLNAHttpRequestHandler handler;
-	
-	@Override
-	protected Object getHandlerInternal(final HttpServletRequest request)
-			throws Exception {
-		if ("SUBSCRIBE".equals(request.getMethod())) {
-			return this.handler;
-		}
-		return null;
-	}
+    @Autowired
+    private DLNAHttpRequestHandler handler;
 
-	
-	
-	
+    @Override
+    protected Object getHandlerInternal(final HttpServletRequest request)
+            throws Exception {
+        if ("SUBSCRIBE".equals(request.getMethod())) {
+            return this.handler;
+        }
+        return null;
+    }
+
 }

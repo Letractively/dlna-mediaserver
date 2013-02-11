@@ -11,25 +11,27 @@ import org.springframework.web.servlet.mvc.LastModified;
 @Service
 public class DLNAHttpRequestAdapter implements HandlerAdapter {
 
-	@Override
-	public boolean supports(final Object handler) {
-		return (handler instanceof DLNAHttpRequestHandler);
-	}
+    @Override
+    public boolean supports(final Object handler) {
+        return handler instanceof DLNAHttpRequestHandler;
+    }
 
-	@Override
-	public ModelAndView handle(final HttpServletRequest request,
-			final HttpServletResponse response, final Object handler) throws Exception {
+    @Override
+    public ModelAndView handle(final HttpServletRequest request,
+            final HttpServletResponse response, final Object handler)
+            throws Exception {
 
-		((DLNAHttpRequestHandler) handler).handleRequest(request, response);
-		return null;
-	}
+        ((DLNAHttpRequestHandler) handler).handleRequest(request, response);
+        return null;
+    }
 
-	@Override
-	public long getLastModified(final HttpServletRequest request, final Object handler) {
-		if (handler instanceof LastModified) {
-			return ((LastModified) handler).getLastModified(request);
-		}
-		return -1L;
+    @Override
+    public long getLastModified(final HttpServletRequest request,
+            final Object handler) {
+        if (handler instanceof LastModified) {
+            return ((LastModified) handler).getLastModified(request);
+        }
+        return -1L;
 
-	}
+    }
 }
